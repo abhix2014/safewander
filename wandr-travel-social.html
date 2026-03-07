@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WANDR — Travel & Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --navy2: #152338;
+    --terracotta: #c9623f;
+    --terra-light: #e8845f;
+    --cream: #f5efe6;
+    --cream2: #ede4d6;
+    --gold: #d4a853;
+    --muted: #8a9bb0;
+    --white: #ffffff;
+    --card-bg: #1a2d42;
+    --border: rgba(255,255,255,0.07);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--cream);
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* CUSTOM SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--terracotta); border-radius: 3px; }
+
+  /* ===================== OVERLAY / MODALS ===================== */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,18,28,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .overlay.hidden { display: none; }
+  @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
+  .modal {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUp { from { opacity:0; transform:translateY(30px) } to { opacity:1; transform:translateY(0) } }
+
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none;
+    color: var(--muted); font-size: 22px; cursor: pointer;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--cream); }
+
+  .modal-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 900;
+    color: var(--terracotta);
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .modal-tagline {
+    font-size: 13px; color: var(--muted);
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; margin-bottom: 28px;
+    color: var(--cream);
+  }
+
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block; font-size: 12px;
+    color: var(--muted); margin-bottom: 7px;
+    letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--terracotta);
+    background: rgba(201,98,63,0.07);
+  }
+  .form-group input::placeholder { color: rgba(138,155,176,0.5); }
+
+  /* Aadhaar section */
+  .aadhaar-box {
+    background: linear-gradient(135deg, rgba(212,168,83,0.1), rgba(201,98,63,0.08));
+    border: 1px solid rgba(212,168,83,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .aadhaar-box .aa-title {
+    font-size: 12px; font-weight: 500;
+    color: var(--gold); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .aadhaar-box .aa-title::before {
+    content: '🔐'; font-size: 14px;
+  }
+  .aadhaar-row {
+    display: flex; gap: 10px;
+  }
+  .aadhaar-row input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,168,83,0.2);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .aadhaar-row input:focus { border-color: var(--gold); }
+  .aadhaar-row input::placeholder { color: rgba(138,155,176,0.4); letter-spacing: 0.05em; font-family:'DM Sans',sans-serif; font-size:13px; }
+  .otp-btn {
+    background: var(--gold);
+    color: var(--navy);
+    border: none; border-radius: 8px;
+    padding: 11px 16px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .otp-btn:hover { background: #e0b85e; }
+  .verified-badge {
+    display: none;
+    align-items: center; gap: 6px;
+    font-size: 12px; color: #4ade80;
+    margin-top: 8px; font-weight: 500;
+  }
+  .verified-badge.show { display: flex; }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--terracotta);
+    color: white; border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 6px;
+  }
+  .btn-primary:hover { background: var(--terra-light); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .modal-switch {
+    text-align: center; margin-top: 20px;
+    font-size: 14px; color: var(--muted);
+  }
+  .modal-switch span {
+    color: var(--terracotta); cursor: pointer; font-weight: 500;
+  }
+  .modal-switch span:hover { text-decoration: underline; }
+
+  /* ===================== NAVBAR ===================== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 500;
+    display: flex; align-items: center;
+    padding: 0 40px;
+    height: 68px;
+    background: rgba(13,27,42,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 900;
+    color: var(--terracotta);
+    letter-spacing: -1px;
+    margin-right: auto;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links {
+    display: flex; gap: 8px; align-items: center;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px; font-weight: 400;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--cream); background: rgba(255,255,255,0.06); }
+  .nav-actions { display: flex; gap: 10px; margin-left: 20px; }
+  .btn-nav-login {
+    background: none; border: 1px solid rgba(255,255,255,0.15);
+    color: var(--cream); padding: 9px 20px;
+    border-radius: 10px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; transition: all 0.2s;
+  }
+  .btn-nav-login:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  .btn-nav-join {
+    background: var(--terracotta); border: none;
+    color: white; padding: 9px 20px;
+    border-radius: 10px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    transition: background 0.2s;
+  }
+  .btn-nav-join:hover { background: var(--terra-light); }
+
+  /* User avatar in nav (post-login) */
+  .nav-user { display: none; align-items: center; gap: 12px; margin-left: 20px; }
+  .nav-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; cursor: pointer;
+    color: white; border: 2px solid rgba(255,255,255,0.15);
+  }
+  .nav-user-name { font-size: 14px; font-weight: 500; }
+
+  /* ===================== HERO ===================== */
+  #hero {
+    min-height: 100vh;
+    padding-top: 68px;
+    display: flex; align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 70% 40%, rgba(201,98,63,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(212,168,83,0.12) 0%, transparent 50%),
+      linear-gradient(160deg, #0d1b2a 0%, #152338 100%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.5;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 40px;
+    max-width: 1200px; margin: 0 auto;
+    width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  }
+  .hero-text .eyebrow {
+    font-size: 12px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--terracotta);
+    font-weight: 500; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-text .eyebrow::before {
+    content: ''; display: block;
+    width: 30px; height: 1px; background: var(--terracotta);
+  }
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 5vw, 76px);
+    line-height: 1.05;
+    font-weight: 900;
+    color: var(--cream);
+    margin-bottom: 24px;
+  }
+  .hero-text h1 em {
+    font-style: italic; color: var(--terracotta);
+  }
+  .hero-text p {
+    font-size: 17px; color: var(--muted);
+    line-height: 1.7; margin-bottom: 40px;
+    font-weight: 300; max-width: 460px;
+  }
+  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+  .cta-primary {
+    background: var(--terracotta);
+    color: white; border: none;
+    border-radius: 12px; padding: 16px 32px;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cta-primary:hover { background: var(--terra-light); transform: translateY(-2px); }
+  .cta-secondary {
+    background: none;
+    color: var(--cream); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 16px 32px;
+    font-size: 15px; font-weight: 400;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .cta-secondary:hover { border-color: var(--cream); background: rgba(255,255,255,0.04); }
+  .hero-stats {
+    display: flex; gap: 40px; margin-top: 48px;
+  }
+  .hero-stat .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700;
+    color: var(--cream);
+  }
+  .hero-stat .lbl {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  /* Hero visual cards */
+  .hero-visual { position: relative; height: 520px; }
+  .travel-card {
+    position: absolute;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    transition: transform 0.3s;
+  }
+  .travel-card:hover { transform: translateY(-6px) rotate(0deg) !important; }
+  .tc1 { width: 260px; top: 30px; right: 20px; transform: rotate(3deg); }
+  .tc2 { width: 220px; bottom: 40px; left: 10px; transform: rotate(-4deg); }
+  .tc3 { width: 200px; top: 200px; left: 50px; transform: rotate(2deg); }
+  .tc-img {
+    width: 100%; height: 160px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #2a4a6b, #1a3352);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .tc-body { padding: 16px; }
+  .tc-location {
+    font-size: 15px; font-weight: 600;
+    color: var(--cream); margin-bottom: 4px;
+  }
+  .tc-meta {
+    font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tc-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--terracotta); }
+  .verified-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(74,222,128,0.12);
+    border: 1px solid rgba(74,222,128,0.25);
+    color: #4ade80; border-radius: 20px;
+    padding: 3px 9px; font-size: 10px; font-weight: 500;
+    margin-top: 8px;
+  }
+
+  /* ===================== MAIN APP AREA ===================== */
+  #app { display: none; padding-top: 68px; }
+
+  /* Tabs */
+  .app-tabs {
+    display: flex; gap: 0;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,27,42,0.5);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 68px; z-index: 100;
+  }
+  .tab-btn {
+    background: none; border: none;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 400;
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tab-btn.active { color: var(--cream); border-bottom-color: var(--terracotta); }
+  .tab-btn:hover { color: var(--cream); }
+
+  /* Content panels */
+  .panel { display: none; padding: 40px; max-width: 1200px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* ===================== FEED ===================== */
+  .feed-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+  .feed-posts { display: flex; flex-direction: column; gap: 24px; }
+
+  .post-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    animation: fadeIn 0.4s ease;
+  }
+  .post-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 24px 14px;
+  }
+  .post-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px;
+    flex-shrink: 0;
+  }
+  .post-user-info .name {
+    font-size: 15px; font-weight: 500; color: var(--cream);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .post-user-info .sub {
+    font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; gap: 6px; margin-top: 2px;
+  }
+  .post-img {
+    width: 100%; height: 320px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 72px; overflow: hidden;
+    position: relative;
+  }
+  .post-img-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 24px; background: linear-gradient(transparent, rgba(10,20,35,0.85));
+  }
+  .post-location {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700; color: white;
+  }
+  .post-country {
+    font-size: 13px; color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+  }
+  .post-body { padding: 20px 24px; }
+  .post-caption { font-size: 15px; line-height: 1.6; color: var(--cream2); margin-bottom: 16px; }
+  .post-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .tag {
+    background: rgba(201,98,63,0.12);
+    border: 1px solid rgba(201,98,63,0.2);
+    color: var(--terra-light);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .tag:hover { background: rgba(201,98,63,0.22); }
+  .post-actions {
+    display: flex; align-items: center; gap: 20px;
+    padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .action-btn {
+    background: none; border: none;
+    color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.2s; padding: 4px 0;
+  }
+  .action-btn:hover { color: var(--terracotta); }
+  .action-btn.liked { color: var(--terracotta); }
+  .post-rating {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--gold);
+  }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px;
+  }
+  .sidebar-title {
+    font-size: 12px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 16px; font-weight: 500;
+  }
+  .trending-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .trending-item:last-child { border-bottom: none; }
+  .trending-item:hover { opacity: 0.75; }
+  .trend-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--terracotta); opacity: 0.5;
+    min-width: 28px;
+  }
+  .trend-info .place { font-size: 14px; font-weight: 500; color: var(--cream); }
+  .trend-info .posts { font-size: 12px; color: var(--muted); }
+
+  .suggested-user {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+  }
+  .su-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; flex-shrink: 0;
+  }
+  .su-info .su-name { font-size: 14px; font-weight: 500; color: var(--cream); }
+  .su-info .su-desc { font-size: 12px; color: var(--muted); }
+  .follow-btn {
+    margin-left: auto; background: none;
+    border: 1px solid var(--terracotta);
+    color: var(--terracotta); border-radius: 8px;
+    padding: 6px 14px; font-size: 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .follow-btn:hover { background: var(--terracotta); color: white; }
+  .follow-btn.following {
+    background: var(--terracotta); color: white;
+  }
+
+  /* ===================== EXPLORE ===================== */
+  .explore-search {
+    display: flex; gap: 14px; margin-bottom: 36px;
+  }
+  .explore-search input {
+    flex: 1;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 20px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif;
+    font-size: 15px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .explore-search input:focus { border-color: var(--terracotta); }
+  .explore-search input::placeholder { color: var(--muted); }
+  .search-btn {
+    background: var(--terracotta); border: none;
+    color: white; border-radius: 12px;
+    padding: 14px 28px; font-size: 15px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; transition: background 0.2s;
+  }
+  .search-btn:hover { background: var(--terra-light); }
+
+  .dest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .dest-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .dest-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+  .dest-img {
+    height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px; position: relative;
+  }
+  .dest-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(13,27,42,0.75); backdrop-filter: blur(8px);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; color: var(--gold);
+    font-weight: 500; border: 1px solid rgba(212,168,83,0.2);
+  }
+  .dest-info { padding: 18px; }
+  .dest-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; color: var(--cream); margin-bottom: 6px;
+  }
+  .dest-info p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .dest-footer {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .dest-footer .travelers { font-size: 12px; color: var(--muted); }
+  .dest-footer .rating { font-size: 13px; color: var(--gold); margin-left: auto; }
+
+  /* ===================== TRIPS ===================== */
+  .trips-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 32px;
+  }
+  .trips-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700; color: var(--cream);
+  }
+  .new-trip-btn {
+    background: var(--terracotta); border: none;
+    color: white; border-radius: 12px;
+    padding: 13px 24px; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .new-trip-btn:hover { background: var(--terra-light); }
+
+  .trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+  .trip-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .trip-card:hover { transform: translateY(-4px); }
+  .trip-banner {
+    height: 140px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 56px; position: relative;
+  }
+  .trip-status {
+    position: absolute; top: 14px; left: 14px;
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 11px; font-weight: 500;
+  }
+  .trip-status.planned { background: rgba(96,165,250,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .trip-status.ongoing { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+  .trip-status.completed { background: rgba(212,168,83,0.2); color: var(--gold); border: 1px solid rgba(212,168,83,0.2); }
+  .trip-info { padding: 22px; }
+  .trip-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--cream); margin-bottom: 8px;
+  }
+  .trip-dates { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .trip-stops {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .stop-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 12px;
+    font-size: 12px; color: var(--cream2);
+  }
+  .trip-companions {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--muted);
+  }
+  .companion-avatars { display: flex; }
+  .companion-avatars span {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    border: 2px solid var(--card-bg);
+    margin-left: -6px;
+  }
+  .companion-avatars span:first-child { margin-left: 0; }
+
+  /* ===================== PROFILE ===================== */
+  .profile-hero {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 32px;
+  }
+  .profile-pic {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 700; color: white;
+    flex-shrink: 0;
+    border: 4px solid rgba(255,255,255,0.1);
+  }
+  .profile-info h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700; color: var(--cream);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 6px;
+  }
+  .profile-info .handle { font-size: 15px; color: var(--muted); margin-bottom: 14px; }
+  .profile-info .bio { font-size: 15px; color: var(--cream2); line-height: 1.6; max-width: 500px; }
+  .profile-stats-row {
+    display: flex; gap: 32px; margin-left: auto;
+    flex-shrink: 0;
+  }
+  .pstat { text-align: center; }
+  .pstat .n {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: var(--cream);
+  }
+  .pstat .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .aadhaar-verified-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, rgba(212,168,83,0.15), rgba(201,98,63,0.1));
+    border: 1px solid rgba(212,168,83,0.35);
+    color: var(--gold); border-radius: 20px;
+    padding: 5px 14px; font-size: 12px; font-weight: 500;
+  }
+
+  .countries-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px; margin-bottom: 28px;
+  }
+  .country-pill {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+    text-align: center; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .country-pill:hover { border-color: var(--terracotta); }
+  .country-pill .flag { font-size: 28px; margin-bottom: 6px; }
+  .country-pill .cname { font-size: 13px; color: var(--cream2); }
+
+  /* Safety stat summary cards */
+  .safety-stats-row {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px; margin-bottom: 32px;
+  }
+  .safety-stat-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 22px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .safety-stat-icon { font-size: 28px; }
+  .safety-stat-info .n {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; color: var(--cream);
+  }
+  .safety-stat-info .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Trust factors */
+  .trust-panel {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 26px; margin-bottom: 32px;
+  }
+  .trust-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; color: var(--cream); margin-bottom: 10px;
+  }
+  .trust-factors { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+  .trust-factor-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .trust-factor-name { font-size: 14px; color: var(--cream2); }
+  .trust-factor-val { font-size: 13px; font-weight: 600; }
+  .trust-bar { background: #4ade80; }
+  .trust-bar.med { background: #fbbf24; }
+  .trust-bar.low { background: #f87171; }
+  .trust-bar.high { background: #4ade80; }
+
+  /* ===================== POST CREATION ===================== */
+  .create-post-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px;
+    margin-bottom: 24px;
+  }
+  .create-row { display: flex; gap: 14px; align-items: flex-start; }
+  .create-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terracotta), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px; color: white; flex-shrink: 0;
+  }
+  .create-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif;
+    font-size: 15px; resize: none; outline: none;
+    min-height: 80px; transition: border-color 0.2s;
+  }
+  .create-input:focus { border-color: var(--terracotta); }
+  .create-input::placeholder { color: var(--muted); }
+  .create-actions {
+    display: flex; gap: 10px; margin-top: 12px; justify-content: flex-end;
+    align-items: center;
+  }
+  .create-tag-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 14px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; outline: none; transition: border-color 0.2s;
+  }
+  .create-tag-input:focus { border-color: var(--terracotta); }
+  .create-tag-input::placeholder { color: var(--muted); }
+  .post-btn {
+    background: var(--terracotta); border: none;
+    color: white; border-radius: 10px;
+    padding: 10px 22px; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .post-btn:hover { background: var(--terra-light); }
+
+  /* ===================== SECTION HEADERS ===================== */
+  .section-header {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 28px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; color: var(--cream);
+  }
+  .section-header .count {
+    font-size: 14px; color: var(--muted);
+  }
+
+  /* Notification dot */
+  .notif-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--terracotta); display: inline-block;
+    margin-left: 4px; vertical-align: middle;
+  }
+
+  /* ===================== TOAST ===================== */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 24px;
+    font-size: 14px; color: var(--cream);
+    display: flex; align-items: center; gap: 10px;
+    z-index: 2000; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast-icon { font-size: 18px; }
+
+  /* ===================== TRUST SCORES ===================== */
+  .trust-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .trust-high { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; }
+  .trust-med  { background: rgba(250,204,21,0.12);  border: 1px solid rgba(250,204,21,0.25);  color: #facc15; }
+  .trust-low  { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+  .trust-new  { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.25);  color: #60a5fa; }
+
+  .trust-bar-wrap {
+    background: rgba(255,255,255,0.06); border-radius: 4px;
+    height: 6px; overflow: hidden; margin-top: 4px;
+  }
+  .trust-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .trust-bar.high { background: linear-gradient(90deg,#22c55e,#4ade80); }
+  .trust-bar.med  { background: linear-gradient(90deg,#eab308,#facc15); }
+  .trust-bar.low  { background: linear-gradient(90deg,#ef4444,#f87171); }
+
+  /* ===================== REPORT MODAL ===================== */
+  .report-modal {
+    background: var(--navy2);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 20px; padding: 36px;
+    width: 100%; max-width: 440px;
+    position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .report-modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--cream); margin-bottom: 6px;
+  }
+  .report-modal .sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .report-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .report-option {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .report-option:hover { border-color: #f87171; background: rgba(248,113,113,0.06); }
+  .report-option.selected { border-color: #f87171; background: rgba(248,113,113,0.1); }
+  .report-option .ro-icon { font-size: 20px; }
+  .report-option .ro-text .rt { font-size: 14px; font-weight: 500; color: var(--cream); }
+  .report-option .ro-text .rs { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn-report-submit {
+    width: 100%; background: #ef4444; border: none;
+    color: white; border-radius: 12px; padding: 14px;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+  }
+  .btn-report-submit:hover { background: #f87171; }
+  .btn-cancel {
+    width: 100%; background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 12px; padding: 12px;
+    font-size: 14px; cursor: pointer; margin-top: 10px;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-cancel:hover { color: var(--cream); border-color: rgba(255,255,255,0.2); }
+
+  /* ===================== SAFETY TAB ===================== */
+  .safety-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .safety-stat-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .safety-stat-icon { font-size: 32px; }
+  .safety-stat-info .n {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: var(--cream);
+  }
+  .safety-stat-info .l { font-size: 13px; color: var(--muted); }
+
+  .moderation-list { display: flex; flex-direction: column; gap: 14px; }
+  .mod-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 22px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .mod-item.resolved { opacity: 0.5; }
+  .mod-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; flex-shrink: 0;
+  }
+  .mod-info { flex: 1; }
+  .mod-info .mod-name { font-size: 15px; font-weight: 500; color: var(--cream); }
+  .mod-info .mod-reason {
+    font-size: 12px; color: var(--muted); margin-top: 3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mod-type {
+    display: inline-flex; align-items: center;
+    background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.2);
+    color: #f87171; border-radius: 8px; padding: 2px 9px;
+    font-size: 11px; font-weight: 500;
+  }
+  .mod-type.warn { background: rgba(250,204,21,0.12); border-color: rgba(250,204,21,0.2); color: #facc15; }
+  .mod-type.ok   { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.2); color: #4ade80; }
+  .mod-actions { display: flex; gap: 8px; }
+  .mod-btn {
+    border: none; border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .mod-btn.warn { background: rgba(250,204,21,0.15); color: #facc15; }
+  .mod-btn.warn:hover { background: rgba(250,204,21,0.28); }
+  .mod-btn.ban  { background: rgba(248,113,113,0.15); color: #f87171; }
+  .mod-btn.ban:hover  { background: rgba(248,113,113,0.28); }
+  .mod-btn.clear{ background: rgba(74,222,128,0.15); color: #4ade80; }
+  .mod-btn.clear:hover{ background: rgba(74,222,128,0.28); }
+
+  /* Suspicious warning banner */
+  .suspicious-banner {
+    background: linear-gradient(135deg, rgba(250,204,21,0.1), rgba(248,113,113,0.07));
+    border: 1px solid rgba(250,204,21,0.25);
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 16px; font-size: 13px; color: var(--cream2);
+    line-height: 1.5;
+  }
+  .suspicious-banner .sb-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .suspicious-banner strong { color: #facc15; }
+
+  /* Profile trust panel */
+  .trust-panel {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; margin-bottom: 24px;
+  }
+  .trust-panel h3 {
+    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 18px; font-weight: 500;
+  }
+  .trust-factors { display: flex; flex-direction: column; gap: 14px; }
+  .trust-factor { display: flex; flex-direction: column; gap: 6px; }
+  .trust-factor-row { display: flex; align-items: center; justify-content: space-between; }
+  .trust-factor-name { font-size: 13px; color: var(--cream2); }
+  .trust-factor-val { font-size: 13px; font-weight: 500; }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width: 900px) {
+    .hero-content { grid-template-columns: 1fr; gap: 40px; }
+    .hero-visual { display: none; }
+    .feed-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    nav { padding: 0 20px; }
+    .panel { padding: 24px 20px; }
+    .app-tabs { padding: 0 20px; }
+    .profile-hero { flex-wrap: wrap; }
+    .profile-stats-row { margin-left: 0; }
+  }
+
+  /* ===================== TRUST SCORE ===================== */
+  .trust-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .trust-high { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.25); color: #4ade80; }
+  .trust-medium { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.25); color: #fbbf24; }
+  .trust-low { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+  .trust-new { background: rgba(138,155,176,0.12); border: 1px solid rgba(138,155,176,0.2); color: var(--muted); }
+
+  .trust-bar-wrap {
+    background: rgba(255,255,255,0.06); border-radius: 4px;
+    height: 6px; overflow: hidden; flex: 1;
+  }
+  .trust-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+  /* ===================== REPORT MODAL ===================== */
+  .report-modal { max-width: 420px; }
+  .report-reason-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+  .reason-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    cursor: pointer; transition: all 0.2s;
+    font-size: 13px; color: var(--cream2);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .reason-card:hover { border-color: #f87171; background: rgba(248,113,113,0.07); color: var(--cream); }
+  .reason-card.selected { border-color: #f87171; background: rgba(248,113,113,0.1); color: #f87171; }
+  .report-note {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; resize: none; outline: none;
+    min-height: 70px; transition: border-color 0.2s;
+  }
+  .report-note:focus { border-color: #f87171; }
+  .report-note::placeholder { color: var(--muted); }
+  .btn-report-submit {
+    width: 100%; background: #dc2626; border: none;
+    color: white; border-radius: 12px; padding: 14px;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; margin-top: 14px;
+    transition: background 0.2s;
+  }
+  .btn-report-submit:hover { background: #ef4444; }
+
+  /* ===================== SAFETY PANEL ===================== */
+  .safety-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 32px; }
+  .safety-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+  }
+  .safety-card-icon { font-size: 32px; margin-bottom: 12px; }
+  .safety-card h3 { font-size: 17px; font-weight: 600; color: var(--cream); margin-bottom: 6px; }
+  .safety-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .safety-stat { font-size: 28px; font-weight: 700; color: var(--cream); font-family: 'Playfair Display', serif; margin-top: 12px; }
+  .safety-stat span { font-size: 13px; font-weight: 400; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+
+  .report-queue { display: flex; flex-direction: column; gap: 12px; }
+  .report-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 22px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .report-item .ri-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; flex-shrink: 0;
+    background: linear-gradient(135deg, #e76f51, #f4a261);
+  }
+  .report-item .ri-info { flex: 1; }
+  .report-item .ri-name { font-size: 15px; font-weight: 500; color: var(--cream); }
+  .report-item .ri-reason { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .report-item .ri-count {
+    background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.2);
+    color: #f87171; border-radius: 8px; padding: 4px 10px;
+    font-size: 12px; font-weight: 600;
+  }
+  .report-actions { display: flex; gap: 8px; }
+  .btn-dismiss {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-dismiss:hover { color: var(--cream); border-color: rgba(255,255,255,0.2); }
+  .btn-warn {
+    background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2);
+    color: #fbbf24; border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-warn:hover { background: rgba(251,191,36,0.2); }
+  .btn-suspend {
+    background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2);
+    color: #f87171; border-radius: 8px; padding: 7px 14px;
+    font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-suspend:hover { background: rgba(248,113,113,0.2); }
+
+  /* Suspicious warning banner */
+  .suspicious-banner {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px; font-size: 13px; color: #fbbf24;
+  }
+  .suspicious-banner .sb-icon { font-size: 20px; flex-shrink: 0; }
+  .suspicious-banner .sb-close {
+    margin-left: auto; background: none; border: none;
+    color: #fbbf24; cursor: pointer; font-size: 16px;
+  }
+
+  /* Trust score section in profile */
+  .trust-section {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px; margin-bottom: 28px;
+  }
+  .trust-section h3 {
+    font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted); margin-bottom: 20px; font-weight: 500;
+  }
+  .trust-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 14px;
+  }
+  .trust-row .tr-label { font-size: 13px; color: var(--cream2); min-width: 160px; }
+  .trust-row .tr-value { font-size: 13px; color: var(--cream); font-weight: 500; min-width: 40px; text-align: right; }
+  .trust-score-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px; font-weight: 700;
+    color: #4ade80; line-height: 1;
+  }
+  .trust-score-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .trust-main-row { display: flex; align-items: center; gap: 32px; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toast-msg">Action completed</span>
+</div>
+
+<!-- ==================== SIGNUP MODAL ==================== -->
+<div class="overlay" id="signup-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('signup-overlay')">✕</button>
+    <div class="modal-logo">WANDR<span>.</span></div>
+    <div class="modal-tagline">Explore the world. Connect with real travelers.</div>
+    <h2>Create your account</h2>
+
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="signup-name" placeholder="Your full name" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="signup-password" placeholder="Create a strong password" />
+    </div>
+
+    <div class="aadhaar-box">
+      <div class="aa-title">Aadhaar Identity Verification</div>
+      <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
+        All WANDR accounts require Aadhaar verification to ensure a trusted community of real travelers.
+      </div>
+      <div class="aadhaar-row">
+        <input type="text" id="aadhaar-num" placeholder="XXXX XXXX XXXX" maxlength="14" oninput="formatAadhaar(this)" />
+        <button class="otp-btn" onclick="sendOtp()">Send OTP</button>
+      </div>
+      <div id="otp-row" style="display:none; margin-top:10px;">
+        <div class="aadhaar-row">
+          <input type="text" id="otp-input" placeholder="Enter 6-digit OTP" maxlength="6" />
+          <button class="otp-btn" onclick="verifyOtp()">Verify</button>
+        </div>
+      </div>
+      <div class="verified-badge" id="aadhaar-verified">
+        <span>✓</span> Aadhaar Verified
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="doSignup()">Create Account</button>
+    <div class="modal-switch">Already have an account? <span onclick="switchModal('signup-overlay','login-overlay')">Sign in</span></div>
+  </div>
+</div>
+
+<!-- ==================== LOGIN MODAL ==================== -->
+<div class="overlay hidden" id="login-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('login-overlay')">✕</button>
+    <div class="modal-logo">WANDR<span>.</span></div>
+    <div class="modal-tagline">Welcome back, explorer.</div>
+    <h2>Sign in</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Your password" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="modal-switch">New here? <span onclick="switchModal('login-overlay','signup-overlay')">Create account</span></div>
+  </div>
+</div>
+
+<!-- ==================== REPORT MODAL ==================== -->
+<div class="overlay hidden" id="report-overlay">
+  <div class="report-modal">
+    <button class="modal-close" onclick="closeModal('report-overlay')">✕</button>
+    <h3>🚩 Report User</h3>
+    <div class="sub" id="report-target-name">Reporting @user</div>
+    <div class="report-options" id="report-options">
+      <div class="report-option" onclick="selectReport(this,'fake_profile')">
+        <span class="ro-icon">🎭</span>
+        <div class="ro-text"><div class="rt">Fake or Impersonation</div><div class="rs">Pretending to be someone else</div></div>
+      </div>
+      <div class="report-option" onclick="selectReport(this,'scam')">
+        <span class="ro-icon">💸</span>
+        <div class="ro-text"><div class="rt">Scam or Fraud</div><div class="rs">Trying to deceive or steal money from travelers</div></div>
+      </div>
+      <div class="report-option" onclick="selectReport(this,'harassment')">
+        <span class="ro-icon">⚠️</span>
+        <div class="ro-text"><div class="rt">Harassment or Abuse</div><div class="rs">Sending threatening or abusive messages</div></div>
+      </div>
+      <div class="report-option" onclick="selectReport(this,'spam')">
+        <span class="ro-icon">📢</span>
+        <div class="ro-text"><div class="rt">Spam or Fake Content</div><div class="rs">Posting misleading travel info or fake reviews</div></div>
+      </div>
+      <div class="report-option" onclick="selectReport(this,'other')">
+        <span class="ro-icon">🔍</span>
+        <div class="ro-text"><div class="rt">Other Safety Concern</div><div class="rs">Something else that feels unsafe</div></div>
+      </div>
+    </div>
+    <button class="btn-report-submit" onclick="submitReport()">Submit Report</button>
+    <button class="btn-cancel" onclick="closeModal('report-overlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- ==================== REPORT MODAL ==================== -->
+<div class="overlay hidden" id="report-overlay">
+  <div class="modal report-modal">
+    <button class="modal-close" onclick="closeModal('report-overlay')">✕</button>
+    <div style="font-size:28px; margin-bottom:10px;">🚩</div>
+    <h2 style="font-size:22px; margin-bottom:6px;">Report User</h2>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:4px;">Reporting: <span id="report-target-name" style="color:var(--cream); font-weight:500;"></span></p>
+    <p style="font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:4px;">All reports are reviewed by our moderation team within 24 hours. The reported user will not know you filed a report.</p>
+
+    <div class="report-reason-grid" id="reason-grid">
+      <div class="reason-card" onclick="selectReason(this,'fake_profile')">🎭 Fake Profile</div>
+      <div class="reason-card" onclick="selectReason(this,'scam')">💸 Scam / Fraud</div>
+      <div class="reason-card" onclick="selectReason(this,'harassment')">😡 Harassment</div>
+      <div class="reason-card" onclick="selectReason(this,'spam')">📢 Spam</div>
+      <div class="reason-card" onclick="selectReason(this,'impersonation')">👤 Impersonation</div>
+      <div class="reason-card" onclick="selectReason(this,'other')">⚠️ Other</div>
+    </div>
+
+    <textarea class="report-note" id="report-note" placeholder="Add more details (optional)..."></textarea>
+    <button class="btn-report-submit" onclick="submitReport()">Submit Report</button>
+  </div>
+</div>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav>
+  <div class="nav-logo">WANDR<span>.</span></div>
+  <ul class="nav-links" id="nav-links-public">
+    <li><a onclick="scrollTo(0,0)">Home</a></li>
+    <li><a>Destinations</a></li>
+    <li><a>Community</a></li>
+    <li><a>About</a></li>
+  </ul>
+  <div class="nav-actions" id="nav-actions-public">
+    <button class="btn-nav-login" onclick="openModal('login-overlay')">Sign In</button>
+    <button class="btn-nav-join" onclick="openModal('signup-overlay')">Join Free</button>
+  </div>
+  <div class="nav-user" id="nav-user-area">
+    <div class="nav-avatar" id="nav-avatar-txt">A</div>
+    <span class="nav-user-name" id="nav-user-name">Arjun</span>
+    <button class="btn-nav-login" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="eyebrow">Verified Travel Community</div>
+      <h1>Explore.<br/><em>Connect.</em><br/>Belong.</h1>
+      <p>The only travel social network where every member is Aadhaar-verified. Share authentic journeys, discover hidden gems, and connect with real travelers — zero fakes, zero bots.</p>
+      <div class="hero-ctas">
+        <button class="cta-primary" onclick="openModal('signup-overlay')">✈ Start Exploring</button>
+        <button class="cta-secondary" onclick="openModal('login-overlay')">Sign In</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">2.4M+</div>
+          <div class="lbl">Travelers</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">180+</div>
+          <div class="lbl">Countries</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">100%</div>
+          <div class="lbl">Verified</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="travel-card tc1">
+        <div class="tc-img">🏯</div>
+        <div class="tc-body">
+          <div class="tc-location">Kyoto, Japan</div>
+          <div class="tc-meta"><span class="dot"></span> 12.4k travelers</div>
+          <div class="verified-chip">✓ Verified Post</div>
+        </div>
+      </div>
+      <div class="travel-card tc2">
+        <div class="tc-img">🌅</div>
+        <div class="tc-body">
+          <div class="tc-location">Santorini, Greece</div>
+          <div class="tc-meta"><span class="dot"></span> 8.9k travelers</div>
+          <div class="verified-chip">✓ Verified Post</div>
+        </div>
+      </div>
+      <div class="travel-card tc3">
+        <div class="tc-img">🏔️</div>
+        <div class="tc-body">
+          <div class="tc-location">Ladakh, India</div>
+          <div class="tc-meta"><span class="dot"></span> 5.1k travelers</div>
+          <div class="verified-chip">✓ Verified Post</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== APP (post-login) ==================== -->
+<section id="app">
+  <div class="app-tabs">
+    <button class="tab-btn active" onclick="switchTab('feed',this)">🌐 Feed</button>
+    <button class="tab-btn" onclick="switchTab('explore',this)">🔍 Explore</button>
+    <button class="tab-btn" onclick="switchTab('trips',this)">✈️ My Trips</button>
+    <button class="tab-btn" onclick="switchTab('profile',this)">👤 Profile</button>
+    <button class="tab-btn" onclick="switchTab('safety',this)">🛡️ Safety <span class="notif-dot"></span></button>
+  </div>
+
+  <!-- ======== FEED ======== -->
+  <div class="panel active" id="panel-feed">
+    <div class="feed-layout">
+      <div>
+        <!-- Create post -->
+        <div class="create-post-box" id="create-post-box" style="display:none;">
+          <div class="create-row">
+            <div class="create-avatar" id="create-avatar">A</div>
+            <div style="flex:1;">
+              <textarea class="create-input" id="new-caption" placeholder="Share your travel story... Where did you go? What did you discover?"></textarea>
+              <div class="create-actions">
+                <input class="create-tag-input" id="new-location" placeholder="📍 Location" style="max-width:160px;" />
+                <input class="create-tag-input" id="new-tags" placeholder="#tags, #adventure" style="max-width:180px;" />
+                <button class="post-btn" onclick="submitPost()">Post ✦</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="feed-posts" id="feed-posts"></div>
+      </div>
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-title">🔥 Trending Destinations</div>
+          <div id="trending-list"></div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-title">👥 Suggested Travelers</div>
+          <div id="suggested-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== EXPLORE ======== -->
+  <div class="panel" id="panel-explore">
+    <div class="section-header"><h2>Explore Destinations</h2></div>
+    <div class="explore-search">
+      <input type="text" id="explore-input" placeholder="Search destinations, countries, experiences..." />
+      <button class="search-btn" onclick="filterDests()">Search</button>
+    </div>
+    <div class="dest-grid" id="dest-grid"></div>
+  </div>
+
+  <!-- ======== TRIPS ======== -->
+  <div class="panel" id="panel-trips">
+    <div class="trips-header">
+      <div><h2>My Journeys</h2><p style="color:var(--muted);margin-top:6px;font-size:14px;">Plan, share, and relive your adventures</p></div>
+      <button class="new-trip-btn" onclick="showToast('🗺️ Trip planner coming soon!')">+ New Trip</button>
+    </div>
+    <div class="trips-grid" id="trips-grid"></div>
+  </div>
+
+  <!-- ======== PROFILE ======== -->
+  <div class="panel" id="panel-profile">
+    <div class="profile-hero">
+      <div class="profile-pic" id="profile-pic">A</div>
+      <div class="profile-info">
+        <h2 id="profile-name">Arjun Mehta <div class="aadhaar-verified-badge">🔐 Aadhaar Verified</div></h2>
+        <div class="handle" id="profile-handle">@arjun_explores</div>
+        <div class="bio">Solo traveler • 24 countries • Chasing sunsets and street food 🌍 Based in Mumbai, dreaming everywhere.</div>
+      </div>
+      <div class="profile-stats-row">
+        <div class="pstat"><div class="n">24</div><div class="l">Countries</div></div>
+        <div class="pstat"><div class="n">138</div><div class="l">Posts</div></div>
+        <div class="pstat"><div class="n">4.2k</div><div class="l">Followers</div></div>
+      </div>
+    </div>
+    <div class="section-header" style="margin-bottom:16px;"><h2>Countries Visited</h2></div>
+    <div class="countries-grid" id="countries-grid"></div>
+
+    <div class="trust-section">
+      <h3>My Trust Score</h3>
+      <div class="trust-main-row">
+        <div>
+          <div class="trust-score-big" id="my-trust-score">87</div>
+          <div class="trust-score-label">Trusted Traveler</div>
+        </div>
+        <div style="flex:1;">
+          <div class="trust-row">
+            <span class="tr-label">🔐 Aadhaar Verified</span>
+            <div class="trust-bar-wrap" style="flex:1;"><div class="trust-bar" style="width:100%;background:#4ade80;"></div></div>
+            <span class="tr-value" style="color:#4ade80;">+40</span>
+          </div>
+          <div class="trust-row">
+            <span class="tr-label">📸 Posts & Activity</span>
+            <div class="trust-bar-wrap" style="flex:1;"><div class="trust-bar" style="width:75%;background:#4ade80;"></div></div>
+            <span class="tr-value" style="color:#4ade80;">+25</span>
+          </div>
+          <div class="trust-row">
+            <span class="tr-label">👥 Interactions</span>
+            <div class="trust-bar-wrap" style="flex:1;"><div class="trust-bar" style="width:55%;background:#fbbf24;"></div></div>
+            <span class="tr-value" style="color:#fbbf24;">+18</span>
+          </div>
+          <div class="trust-row">
+            <span class="tr-label">📅 Account Age</span>
+            <div class="trust-bar-wrap" style="flex:1;"><div class="trust-bar" style="width:30%;background:#fbbf24;"></div></div>
+            <span class="tr-value" style="color:#fbbf24;">+4</span>
+          </div>
+          <div class="trust-row">
+            <span class="tr-label">🚩 Reports Received</span>
+            <div class="trust-bar-wrap" style="flex:1;"><div class="trust-bar" style="width:0%;background:#f87171;"></div></div>
+            <span class="tr-value" style="color:#4ade80;">0</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6;">Trust scores are based solely on your activity within WANDR. Higher scores unlock priority support, trip co-hosting, and community guide badges.</p>
+    </div>
+  </div>
+
+  <!-- ======== SAFETY ======== -->
+  <div class="panel" id="panel-safety">
+    <div class="section-header"><h2>🛡️ Community Safety</h2><span class="count">Keeping WANDR trustworthy</span></div>
+
+    <div class="safety-stats-row">
+      <div class="safety-stat-card"><div class="safety-stat-icon">🚩</div><div class="safety-stat-info"><div class="n" id="report-count">3</div><div class="l">Active Reports</div></div></div>
+      <div class="safety-stat-card"><div class="safety-stat-icon">✅</div><div class="safety-stat-info"><div class="n">2.4M</div><div class="l">Verified Accounts</div></div></div>
+      <div class="safety-stat-card"><div class="safety-stat-icon">🔒</div><div class="safety-stat-info"><div class="n">100%</div><div class="l">Aadhaar-Linked</div></div></div>
+      <div class="safety-stat-card"><div class="safety-stat-icon">⚡</div><div class="safety-stat-info"><div class="n">~2h</div><div class="l">Avg. Review Time</div></div></div>
+    </div>
+
+    <div class="trust-panel">
+      <h3>How Trust Scores Work</h3>
+      <div style="font-size:14px; color:var(--muted); line-height:1.6;">
+        Every WANDR member earns a Trust Score based on verifiable activity <em>within WANDR only</em>. It is <strong style="color:var(--cream)">never</strong> based on external databases, criminal records, or news articles — only your behaviour on this platform.
+      </div>
+      <div class="trust-factors">
+        <div class="trust-factor">
+          <div class="trust-factor-row"><span class="trust-factor-name">🔐 Aadhaar Verified</span><span class="trust-factor-val" style="color:#4ade80;">+40 pts</span></div>
+          <div class="trust-bar-wrap"><div class="trust-bar high" style="width:100%; background:#4ade80;"></div></div>
+        </div>
+        <div class="trust-factor">
+          <div class="trust-factor-row"><span class="trust-factor-name">📸 Posts & Trip History</span><span class="trust-factor-val" style="color:#4ade80;">+25 pts</span></div>
+          <div class="trust-bar-wrap"><div class="trust-bar high" style="width:62%; background:#4ade80;"></div></div>
+        </div>
+        <div class="trust-factor">
+          <div class="trust-factor-row"><span class="trust-factor-name">👥 Community Interactions</span><span class="trust-factor-val" style="color:#fbbf24;">+20 pts</span></div>
+          <div class="trust-bar-wrap"><div class="trust-bar" style="width:50%; background:#fbbf24;"></div></div>
+        </div>
+        <div class="trust-factor">
+          <div class="trust-factor-row"><span class="trust-factor-name">📅 Account Age</span><span class="trust-factor-val" style="color:#fbbf24;">+15 pts</span></div>
+          <div class="trust-bar-wrap"><div class="trust-bar" style="width:37%; background:#fbbf24;"></div></div>
+        </div>
+        <div class="trust-factor">
+          <div class="trust-factor-row"><span class="trust-factor-name">🚩 Reports Received</span><span class="trust-factor-val" style="color:#f87171;">−20 pts each</span></div>
+          <div class="trust-bar-wrap"><div class="trust-bar" style="width:0%; background:#f87171;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-bottom:16px;"><h2 style="font-size:22px;">Reported Accounts</h2><span class="count">Community moderation queue</span></div>
+    <div class="report-queue" id="mod-list"></div>
+  </div>
+
+</section>
+
+<script>
+/* ======================== STATE ======================== */
+let currentUser = null;
+let aadhaarVerified = false;
+let otpSent = false;
+let selectedReportReason = null;
+let reportTargetHandle = null;
+
+const MOD_QUEUE = [
+  { id:'mod1', name:'travel_guide_99', avatar:'TG', color:'#e76f51,#f4a261', reason:'Scam or Fraud', detail:'Multiple users reported fake tour packages and money requests', reports:7, status:'pending' },
+  { id:'mod2', name:'solo.explorer.x', avatar:'SE', color:'#c77dff,#7b2d8b', reason:'Fake Profile', detail:'Account created 2 days ago, copying photos from other travelers', reports:4, status:'pending' },
+  { id:'mod3', name:'budget_trips_22', avatar:'BT', color:'#2a9d8f,#264653', reason:'Spam Content', detail:'Posting identical promotional content across multiple threads', reports:2, status:'pending' },
+];
+
+const POSTS = [
+  { id:1, user:"Priya Sharma", handle:"priya_wanders", avatar:"PS", color:"#e76f51,#f4a261", emoji:"🌺", location:"Bali, Indonesia", country:"Indonesia 🇮🇩", caption:"Spent 10 days chasing waterfalls, rice terraces, and the most incredible sunsets I've ever seen. Bali isn't just a destination — it's a feeling. Every corner has a temple, every stranger has a story.", tags:["#Bali","#SoloTravel","#Indonesia"], likes:342, comments:28, rating:4.9, liked:false, trust:'high' },
+  { id:2, user:"Rahul Desai", handle:"rahul.roams", avatar:"RD", color:"#2a9d8f,#264653", emoji:"🏔️", location:"Spiti Valley, India", country:"Himachal Pradesh 🇮🇳", caption:"3 days, no phone signal, no internet. Just 15,000 feet of pure Himalayan silence. Spiti is unlike anything else — barren, brutal, and breathtakingly beautiful. Changed me forever.", tags:["#Spiti","#Himalayas","#Offbeat","#India"], likes:521, comments:47, rating:5.0, liked:false, trust:'high' },
+  { id:3, user:"New Traveler", handle:"new_traveler_03", avatar:"NT", color:"#fb8500,#023047", emoji:"🗺️", location:"Unknown City", country:"Somewhere 🌍", caption:"Hey everyone! I'm a new traveler and I have amazing cheap tour deals for you. Contact me privately for exclusive discounts and packages!", tags:["#Travel","#Deals","#Tours"], likes:3, comments:1, rating:3.1, liked:false, trust:'low', suspicious:true },
+  { id:4, user:"Vikram Nair", handle:"vikram.nomad", avatar:"VN", color:"#fb8500,#023047", emoji:"🗺️", location:"Cappadocia, Turkey", country:"Turkey 🇹🇷", caption:"Hot air balloon at sunrise. That's it. That's the post. Words don't do justice to floating over fairy chimneys as the sun painted everything gold. Book it. Do it. Thank yourself later.", tags:["#Cappadocia","#Turkey","#HotAirBalloon"], likes:876, comments:104, rating:5.0, liked:false, trust:'high' },
+];
+
+const DESTINATIONS = [
+  { emoji:"🏯", name:"Kyoto", country:"Japan 🇯🇵", desc:"Ancient temples, bamboo groves, and tea ceremony culture in Japan's cultural heart.", travelers:"12.4k", rating:"4.9", badge:"Popular" },
+  { emoji:"🏔️", name:"Ladakh", country:"India 🇮🇳", desc:"Where mountains meet sky. Earth's most dramatic landscape awaits adventurous souls.", travelers:"5.1k", rating:"5.0", badge:"Hidden Gem" },
+  { emoji:"🌅", name:"Santorini", country:"Greece 🇬🇷", desc:"Whitewashed cliffs, azure domes, and sunsets that redefine beauty.", travelers:"8.9k", rating:"4.8", badge:"Iconic" },
+  { emoji:"🌿", name:"Costa Rica", country:"Costa Rica 🇨🇷", desc:"Rainforests, volcanoes, sloths, and some of the most biodiverse ecosystems on Earth.", travelers:"7.2k", rating:"4.7", badge:"Nature" },
+  { emoji:"🏛️", name:"Athens", country:"Greece 🇬🇷", desc:"Walk among 3,000 years of history. The Acropolis alone is worth the journey.", travelers:"6.8k", rating:"4.6", badge:"History" },
+  { emoji:"🌊", name:"Maldives", country:"Maldives 🇲🇻", desc:"Crystal lagoons, overwater bungalows, and the world's most perfect beaches.", travelers:"9.3k", rating:"4.9", badge:"Luxury" },
+  { emoji:"🦁", name:"Serengeti", country:"Tanzania 🇹🇿", desc:"The greatest wildlife show on Earth. 1.5 million wildebeest can't be wrong.", travelers:"4.1k", rating:"5.0", badge:"Wildlife" },
+  { emoji:"🎌", name:"Tokyo", country:"Japan 🇯🇵", desc:"Hyper-modern and deeply traditional. Sushi, shrines, and sensory overload.", travelers:"15.7k", rating:"4.9", badge:"Must Visit" },
+];
+
+const TRIPS = [
+  { emoji:"🗻", title:"Japan Odyssey", dates:"Mar 15 – Apr 2, 2025", status:"completed", stops:["Tokyo","Kyoto","Osaka","Nara"], companions:["R","P","V"], colors:["#e76f51","#2a9d8f","#c77dff"] },
+  { emoji:"🏝️", title:"Southeast Asia Loop", dates:"Jun 10 – Jul 5, 2025", status:"planned", stops:["Bangkok","Chiang Mai","Bali","Komodo"], companions:["A","M"], colors:["#fb8500","#2a9d8f"] },
+  { emoji:"🌍", title:"East Africa Safari", dates:"Aug 20 – Sep 8, 2025", status:"ongoing", stops:["Nairobi","Serengeti","Zanzibar"], companions:["S","R","P","K"], colors:["#e76f51","#c77dff","#fb8500","#2a9d8f"] },
+];
+
+const TRENDING = [
+  { place:"Bali, Indonesia", posts:"24k posts" },
+  { place:"Ladakh, India", posts:"18k posts" },
+  { place:"Kyoto, Japan", posts:"31k posts" },
+  { place:"Cappadocia, Turkey", posts:"15k posts" },
+  { place:"Santorini, Greece", posts:"29k posts" },
+];
+
+const SUGGESTED = [
+  { name:"Meera Krishnan", desc:"19 countries • Photographer", avatar:"MK", color:"#c77dff,#7b2d8b" },
+  { name:"Siddharth Roy", desc:"Solo biker • Adventure seeker", avatar:"SR", color:"#2a9d8f,#264653" },
+  { name:"Fatima Shaikh", desc:"Food traveler • Chef", avatar:"FS", color:"#e76f51,#f4a261" },
+];
+
+const COUNTRIES = [
+  {flag:"🇯🇵",name:"Japan"},{flag:"🇮🇳",name:"India"},{flag:"🇬🇷",name:"Greece"},
+  {flag:"🇲🇦",name:"Morocco"},{flag:"🇹🇷",name:"Turkey"},{flag:"🇮🇩",name:"Bali"},
+  {flag:"🇨🇷",name:"Costa Rica"},{flag:"🇹🇭",name:"Thailand"},{flag:"🇫🇷",name:"France"},
+  {flag:"🇵🇹",name:"Portugal"},{flag:"🇲🇻",name:"Maldives"},{flag:"🇹🇿",name:"Tanzania"},
+];
+
+/* ======================== MODALS ======================== */
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+function switchModal(close, open) {
+  closeModal(close); openModal(open);
+}
+
+/* ======================== AADHAAR ======================== */
+function formatAadhaar(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,12);
+  el.value = v.replace(/(\d{4})(?=\d)/g,'$1 ');
+}
+
+function sendOtp() {
+  const num = document.getElementById('aadhaar-num').value.replace(/\s/g,'');
+  if (num.length !== 12) { showToast('⚠️ Enter valid 12-digit Aadhaar number'); return; }
+  document.getElementById('otp-row').style.display = 'block';
+  showToast('📱 OTP sent to Aadhaar-linked mobile number');
+}
+
+function verifyOtp() {
+  const otp = document.getElementById('otp-input').value;
+  if (otp.length < 4) { showToast('⚠️ Enter the OTP'); return; }
+  aadhaarVerified = true;
+  document.getElementById('aadhaar-verified').classList.add('show');
+  document.getElementById('otp-row').style.display = 'none';
+  showToast('✅ Aadhaar verified successfully!');
+}
+
+/* ======================== AUTH ======================== */
+function doSignup() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  if (!name) { showToast('⚠️ Please enter your name'); return; }
+  if (!email) { showToast('⚠️ Please enter your email'); return; }
+  if (!aadhaarVerified) { showToast('⚠️ Please complete Aadhaar verification'); return; }
+  login(name, email);
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const name = email.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim() || 'Traveler';
+  if (!email) { showToast('⚠️ Please enter your email'); return; }
+  login(name, email);
+}
+
+function login(name, email) {
+  currentUser = { name, email };
+  closeModal('signup-overlay'); closeModal('login-overlay');
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-links-public').style.display = 'none';
+  document.getElementById('nav-actions-public').style.display = 'none';
+  const userArea = document.getElementById('nav-user-area');
+  userArea.style.display = 'flex';
+  const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('nav-avatar-txt').textContent = initials;
+  document.getElementById('nav-user-name').textContent = name.split(' ')[0];
+  // Profile
+  document.getElementById('profile-pic').textContent = initials;
+  document.getElementById('profile-name').innerHTML = name + ' <div class="aadhaar-verified-badge">🔐 Aadhaar Verified</div>';
+  document.getElementById('profile-handle').textContent = '@' + name.toLowerCase().replace(/\s+/g,'_');
+  // Create post
+  document.getElementById('create-post-box').style.display = 'block';
+  document.getElementById('create-avatar').textContent = initials;
+  renderAll();
+  showToast('🎉 Welcome to WANDR, ' + name.split(' ')[0] + '!');
+}
+
+function logout() {
+  currentUser = null; aadhaarVerified = false; otpSent = false;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('hero').style.display = 'flex';
+  document.getElementById('nav-links-public').style.display = 'flex';
+  document.getElementById('nav-actions-public').style.display = 'flex';
+  document.getElementById('nav-user-area').style.display = 'none';
+  document.getElementById('aadhaar-verified').classList.remove('show');
+  document.getElementById('otp-row').style.display = 'none';
+  document.getElementById('aadhaar-num').value = '';
+  document.getElementById('otp-input').value = '';
+}
+
+/* ======================== TABS ======================== */
+function switchTab(tab, btn) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ======================== RENDER ======================== */
+function renderAll() {
+  renderFeed(); renderTrending(); renderSuggested();
+  renderExplore(); renderTrips(); renderCountries(); renderModQueue();
+}
+
+function renderFeed() {
+  const container = document.getElementById('feed-posts');
+  container.innerHTML = POSTS.map(p => `
+    <div class="post-card" id="post-${p.id}">
+      <div class="post-header">
+        <div class="post-avatar" style="background:linear-gradient(135deg,${p.color})">${p.avatar}</div>
+        <div class="post-user-info" style="flex:1;">
+          <div class="name">${p.user} <div class="verified-chip" style="font-size:10px;">✓ Verified</div> ${getTrustBadge(p.trust||'high')}</div>
+          <div class="sub">@${p.handle} <span class="dot" style="width:3px;height:3px;border-radius:50%;background:var(--muted);display:inline-block;"></span> ${p.country}</div>
+        </div>
+        <button class="action-btn" style="margin-left:auto;font-size:13px;" onclick="openReportModal('${p.handle}','${p.user}')">🚩</button>
+      </div>
+      ${p.suspicious ? `<div class="suspicious-banner" style="margin:0 0 0 0;border-radius:0;border-left:none;border-right:none;"><span class="sb-icon">⚠️</span><div><strong>Suspicious Activity Detected:</strong> This account was created recently and has limited post history. Proceed with caution when sharing personal travel plans.</div></div>` : ''}
+      <div class="post-img" style="background:linear-gradient(135deg,${p.color});">
+        <span style="font-size:80px">${p.emoji}</span>
+        <div class="post-img-overlay">
+          <div class="post-location">${p.location}</div>
+          <div class="post-country">${p.country}</div>
+        </div>
+      </div>
+      <div class="post-body">
+        <p class="post-caption">${p.caption}</p>
+        <div class="post-tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div class="post-actions">
+          <button class="action-btn ${p.liked?'liked':''}" onclick="toggleLike(${p.id})">
+            ${p.liked?'❤️':'🤍'} ${p.likes}
+          </button>
+          <button class="action-btn" onclick="showToast('💬 Comments coming soon!')">
+            💬 ${p.comments}
+          </button>
+          <button class="action-btn" onclick="showToast('🔗 Link copied!')">
+            🔗 Share
+          </button>
+          <button class="action-btn" style="color:#f87171;" onclick="openReportModal('${p.handle}','${p.user}')">
+            🚩 Report
+          </button>
+          <div class="post-rating">★ ${p.rating}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleLike(id) {
+  const p = POSTS.find(x=>x.id===id);
+  p.liked = !p.liked;
+  p.likes += p.liked ? 1 : -1;
+  renderFeed();
+}
+
+function renderTrending() {
+  document.getElementById('trending-list').innerHTML = TRENDING.map((t,i)=>`
+    <div class="trending-item" onclick="showToast('🔍 Filtering by '+t.place)">
+      <div class="trend-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="trend-info">
+        <div class="place">${t.place}</div>
+        <div class="posts">${t.posts}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSuggested() {
+  document.getElementById('suggested-list').innerHTML = SUGGESTED.map(u=>`
+    <div class="suggested-user">
+      <div class="su-avatar" style="background:linear-gradient(135deg,${u.color})">${u.avatar}</div>
+      <div class="su-info">
+        <div class="su-name">${u.name}</div>
+        <div class="su-desc">${u.desc}</div>
+      </div>
+      <button class="follow-btn" onclick="toggleFollow(this)"">Follow</button>
+    </div>
+  `).join('');
+}
+
+function toggleFollow(btn) {
+  btn.classList.toggle('following');
+  btn.textContent = btn.classList.contains('following') ? '✓ Following' : 'Follow';
+  showToast(btn.classList.contains('following') ? '✅ Now following!' : 'Unfollowed');
+}
+
+let allDests = [...DESTINATIONS];
+function renderExplore(list) {
+  const dests = list || allDests;
+  document.getElementById('dest-grid').innerHTML = dests.map(d=>`
+    <div class="dest-card" onclick="showToast('🌍 Exploring '+d.name+'...')">
+      <div class="dest-img" style="background:linear-gradient(135deg,var(--navy2),var(--card-bg))">
+        <span>${d.emoji}</span>
+        <div class="dest-badge">${d.badge}</div>
+      </div>
+      <div class="dest-info">
+        <h3>${d.name}</h3>
+        <p>${d.country}</p>
+        <p style="margin-top:8px;">${d.desc}</p>
+        <div class="dest-footer">
+          <span class="travelers">👥 ${d.travelers} travelers</span>
+          <span class="rating">★ ${d.rating}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterDests() {
+  const q = document.getElementById('explore-input').value.toLowerCase().trim();
+  if (!q) { renderExplore(); return; }
+  renderExplore(allDests.filter(d =>
+    d.name.toLowerCase().includes(q) ||
+    d.country.toLowerCase().includes(q) ||
+    d.desc.toLowerCase().includes(q) ||
+    d.badge.toLowerCase().includes(q)
+  ));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('explore-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') filterDests();
+  });
+});
+
+function renderTrips() {
+  document.getElementById('trips-grid').innerHTML = TRIPS.map(t=>`
+    <div class="trip-card">
+      <div class="trip-banner" style="background:linear-gradient(135deg,var(--navy2),#1e3a55)">
+        <span>${t.emoji}</span>
+        <div class="trip-status ${t.status}">${t.status.charAt(0).toUpperCase()+t.status.slice(1)}</div>
+      </div>
+      <div class="trip-info">
+        <h3>${t.title}</h3>
+        <div class="trip-dates">📅 ${t.dates}</div>
+        <div class="trip-stops">${t.stops.map(s=>`<span class="stop-chip">📍 ${s}</span>`).join('')}</div>
+        <div class="trip-companions">
+          <div class="companion-avatars">${t.companions.map((c,i)=>`<span style="background:linear-gradient(135deg,${t.colors[i]||'#2a9d8f,#264653'})">${c}</span>`).join('')}</div>
+          <span style="margin-left:8px;">${t.companions.length} companion${t.companions.length!==1?'s':''}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCountries() {
+  document.getElementById('countries-grid').innerHTML = COUNTRIES.map(c=>`
+    <div class="country-pill" onclick="showToast('🌍 Viewing trips in '+c.name)">
+      <div class="flag">${c.flag}</div>
+      <div class="cname">${c.name}</div>
+    </div>
+  `).join('');
+}
+
+function submitPost() {
+  const caption = document.getElementById('new-caption').value.trim();
+  const location = document.getElementById('new-location').value.trim() || 'Unknown Destination';
+  const tagsRaw = document.getElementById('new-tags').value.trim();
+  if (!caption) { showToast('⚠️ Write something about your journey!'); return; }
+  const tags = tagsRaw ? tagsRaw.split(',').map(t=>t.trim().startsWith('#')?t.trim():'#'+t.trim()) : ['#Travel'];
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  POSTS.unshift({
+    id: Date.now(), user: currentUser.name,
+    handle: currentUser.name.toLowerCase().replace(/\s+/g,'_'),
+    avatar: initials, color: "var(--terracotta),var(--gold)",
+    emoji: ['🌍','✈️','🗺️','🌅','🏔️','🏝️'][Math.floor(Math.random()*6)],
+    location, country: location,
+    caption, tags,
+    likes: 0, comments: 0, rating: 5.0, liked: false
+  });
+  document.getElementById('new-caption').value = '';
+  document.getElementById('new-location').value = '';
+  document.getElementById('new-tags').value = '';
+  renderFeed();
+  showToast('🎉 Your travel story is live!');
+}
+
+/* ======================== TOAST ======================== */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ======================== REPORT MODAL ======================== */
+function openReportModal(handle, name) {
+  reportTargetHandle = handle;
+  document.getElementById('report-target-name').textContent = name + ' (@' + handle + ')';
+  selectedReportReason = null;
+  document.querySelectorAll('.reason-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('report-note').value = '';
+  openModal('report-overlay');
+}
+
+function selectReason(el, reason) {
+  document.querySelectorAll('.reason-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedReportReason = reason;
+}
+
+function submitReport() {
+  if (!selectedReportReason) { showToast('⚠️ Please select a reason'); return; }
+  const note = document.getElementById('report-note').value.trim();
+  const reasonLabels = {
+    fake_profile: 'Fake Profile', scam: 'Scam / Fraud',
+    harassment: 'Harassment', spam: 'Spam',
+    impersonation: 'Impersonation', other: 'Other'
+  };
+  MOD_QUEUE.unshift({
+    id: 'mod_' + Date.now(),
+    name: reportTargetHandle,
+    avatar: reportTargetHandle.substring(0,2).toUpperCase(),
+    color: '#e76f51,#f4a261',
+    reason: reasonLabels[selectedReportReason],
+    detail: note || 'No additional details provided.',
+    reports: 1,
+    status: 'pending'
+  });
+  document.getElementById('report-count').textContent = MOD_QUEUE.filter(m=>m.status==='pending').length;
+  renderModQueue();
+  closeModal('report-overlay');
+  showToast('✅ Report submitted. Our team will review within 24 hours.');
+}
+
+/* ======================== MOD QUEUE ======================== */
+function renderModQueue() {
+  const pending = MOD_QUEUE.filter(m => m.status === 'pending');
+  document.getElementById('report-count').textContent = pending.length;
+  if (!document.getElementById('mod-list')) return;
+  if (pending.length === 0) {
+    document.getElementById('mod-list').innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--muted);">
+        <div style="font-size:40px;margin-bottom:12px;">✅</div>
+        <div style="font-size:16px;">No pending reports — community is clean!</div>
+      </div>`;
+    return;
+  }
+  document.getElementById('mod-list').innerHTML = pending.map(m => `
+    <div class="report-item" id="ritem-${m.id}">
+      <div class="ri-avatar" style="background:linear-gradient(135deg,${m.color})">${m.avatar}</div>
+      <div class="ri-info">
+        <div class="ri-name">@${m.name}</div>
+        <div class="ri-reason">Reason: <strong style="color:var(--cream)">${m.reason}</strong> — ${m.detail}</div>
+      </div>
+      <div class="ri-count">🚩 ${m.reports} report${m.reports!==1?'s':''}</div>
+      <div class="report-actions">
+        <button class="btn-dismiss" onclick="modAction('${m.id}','dismiss')">Dismiss</button>
+        <button class="btn-warn" onclick="modAction('${m.id}','warn')">⚠️ Warn</button>
+        <button class="btn-suspend" onclick="modAction('${m.id}','suspend')">🔴 Suspend</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function modAction(id, action) {
+  const item = MOD_QUEUE.find(m => m.id === id);
+  if (!item) return;
+  item.status = action;
+  const msgs = {
+    dismiss: '✅ Report dismissed — no action taken.',
+    warn: '⚠️ Warning issued to @' + item.name,
+    suspend: '🔴 Account @' + item.name + ' has been suspended.'
+  };
+  renderModQueue();
+  showToast(msgs[action]);
+}
+
+/* ======================== TRUST BADGE HELPER ======================== */
+function getTrustBadge(level) {
+  const badges = {
+    high: '<span class="trust-badge trust-high">★ Trusted</span>',
+    medium: '<span class="trust-badge trust-medium">◎ Growing</span>',
+    low: '<span class="trust-badge trust-low">⚠ New</span>',
+    new: '<span class="trust-badge trust-new">• New Account</span>',
+  };
+  return badges[level] || badges['new'];
+}
+</script>
+</body>
+</html>

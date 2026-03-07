@@ -1,0 +1,2787 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeWander v2 — Rishikesh Travel Community</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;600;800;900&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS — DUAL THEME
+═══════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg-primary: #120900;
+  --bg-secondary: #0D1A10;
+  --bg-card: rgba(255,245,230,0.03);
+  --bg-card-hover: rgba(255,107,26,0.05);
+  --border: rgba(255,245,230,0.07);
+  --border-accent: rgba(255,107,26,0.2);
+  --text-primary: #FFF5E6;
+  --text-muted: rgba(255,245,230,0.5);
+  --text-faint: rgba(255,245,230,0.25);
+  --nav-bg: rgba(18,9,0,0.9);
+  --overlay: rgba(18,9,0,0.85);
+}
+[data-theme="light"] {
+  --bg-primary: #FDF6EE;
+  --bg-secondary: #EEF7F0;
+  --bg-card: rgba(60,30,0,0.04);
+  --bg-card-hover: rgba(255,107,26,0.06);
+  --border: rgba(60,30,0,0.1);
+  --border-accent: rgba(255,107,26,0.35);
+  --text-primary: #1A0F00;
+  --text-muted: rgba(60,30,0,0.55);
+  --text-faint: rgba(60,30,0,0.3);
+  --nav-bg: rgba(253,246,238,0.92);
+  --overlay: rgba(253,246,238,0.9);
+}
+
+:root {
+  --saffron: #FF6B1A;
+  --ganga: #00B4D8;
+  --gold: #FFB627;
+  --verified: #00C896;
+  --danger: #FF3B30;
+  --jungle: #1B3A2D;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background 0.4s, color 0.4s;
+  cursor: none;
+}
+
+/* Custom Cursor */
+.cursor {
+  width: 12px; height: 12px;
+  background: var(--saffron);
+  border-radius: 50%;
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 99999;
+  transition: transform 0.15s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: normal;
+}
+.cursor-ring {
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(255,107,26,0.4);
+  border-radius: 50%;
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 99998;
+  transition: all 0.08s linear;
+}
+body:hover .cursor { opacity: 1; }
+
+/* Noise */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0.35;
+}
+
+/* ═══ NAV ═══ */
+nav {
+  position: fixed; top:0; left:0; right:0;
+  z-index: 5000;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(24px);
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.4s;
+}
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+}
+.logo span { color: var(--saffron); }
+.logo sup {
+  font-size: 0.4rem;
+  background: var(--verified);
+  color: #fff;
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  vertical-align: super;
+  letter-spacing: 0.1em;
+}
+
+.nav-links {
+  display: flex; gap: 1.8rem;
+  list-style: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.nav-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; position: relative; }
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0; right: 100%;
+  height: 1px;
+  background: var(--saffron);
+  transition: right 0.3s;
+}
+.nav-links a:hover { color: var(--saffron); }
+.nav-links a:hover::after { right: 0; }
+
+.nav-right { display: flex; align-items: center; gap: 0.8rem; }
+
+/* Theme Toggle */
+.theme-toggle {
+  width: 52px; height: 28px;
+  background: var(--border);
+  border-radius: 14px;
+  border: 1px solid var(--border-accent);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.theme-toggle::before {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--saffron);
+  transition: transform 0.3s;
+}
+[data-theme="light"] .theme-toggle::before { transform: translateX(24px); }
+.theme-icon {
+  position: absolute;
+  top: 50%; right: 6px;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  pointer-events: none;
+}
+[data-theme="light"] .theme-icon { right: auto; left: 6px; }
+
+.nav-cta {
+  background: var(--saffron);
+  color: #1A0F00;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.3rem;
+  border-radius: 2px;
+  border: none;
+  cursor: none;
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: var(--gold); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,26,0.35); }
+
+/* ═══ HERO ═══ */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 7rem 2rem 4rem;
+  position: relative; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 65% 35%, rgba(255,107,26,0.1) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 15% 75%, rgba(0,180,216,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 85% 80%, rgba(0,200,150,0.05) 0%, transparent 50%);
+}
+[data-theme="light"] .hero-bg {
+  background:
+    radial-gradient(ellipse 70% 60% at 65% 35%, rgba(255,107,26,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 15% 75%, rgba(0,180,216,0.05) 0%, transparent 55%);
+}
+
+.hero-mountains {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+}
+.hero-ganga {
+  position: absolute; bottom: 55px; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--ganga) 30%, var(--ganga) 70%, transparent 100%);
+  opacity: 0.3;
+  animation: riverflow 4s ease-in-out infinite;
+}
+@keyframes riverflow { 0%,100%{opacity:0.2;transform:scaleX(0.97)} 50%{opacity:0.5;transform:scaleX(1.01)} }
+
+.hero-inner {
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; align-items: center;
+  position: relative; z-index: 2;
+}
+
+.eyebrow {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--saffron);
+  margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 0.7rem;
+  opacity: 0; animation: fadeUp 0.8s 0.1s forwards;
+}
+.eyebrow::before { content:''; width:2rem; height:1px; background:var(--saffron); }
+
+h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(2.6rem, 5.5vw, 4.8rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.4rem;
+  opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+}
+h1 .line-saffron { color: var(--saffron); display: block; }
+h1 .line-ganga { color: var(--ganga); }
+
+.hero-desc {
+  font-size: 1rem; line-height: 1.75;
+  color: var(--text-muted);
+  max-width: 44ch;
+  margin-bottom: 2rem;
+  opacity: 0; animation: fadeUp 0.8s 0.3s forwards;
+}
+
+.hero-btns {
+  display: flex; gap: 0.8rem; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+}
+.btn-primary {
+  background: var(--saffron); color: #1A0F00;
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.85rem; letter-spacing: 0.05em;
+  padding: 0.9rem 1.8rem; border: none; border-radius: 2px;
+  cursor: none; transition: all 0.25s;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.btn-primary:hover { background: var(--gold); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,107,26,0.3); }
+.btn-secondary {
+  background: transparent; color: var(--text-primary);
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.9rem 1.8rem;
+  border: 1px solid var(--border-accent);
+  border-radius: 2px; cursor: none; transition: all 0.25s;
+}
+.btn-secondary:hover { border-color: var(--text-primary); background: var(--bg-card-hover); }
+
+.hero-stats {
+  display: flex; gap: 2rem; margin-top: 2.5rem;
+  padding-top: 2rem; border-top: 1px solid var(--border);
+  opacity: 0; animation: fadeUp 0.8s 0.5s forwards;
+}
+.stat { }
+.stat-n {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1.7rem; font-weight: 900;
+}
+.stat-n em { color: var(--saffron); font-style: normal; }
+.stat-l {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-faint); margin-top: 0.15rem;
+}
+
+/* Live Status pill */
+.live-pill {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(255,59,48,0.1);
+  border: 1px solid rgba(255,59,48,0.3);
+  color: #FF3B30;
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.3rem 0.8rem; border-radius: 20px;
+  margin-bottom: 1.2rem;
+  opacity: 0; animation: fadeUp 0.8s 0s forwards;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #FF3B30;
+  animation: blink 1.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Hero Right */
+.hero-right {
+  position: relative;
+  opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+}
+
+.profile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 16px;
+  padding: 1.8rem;
+  backdrop-filter: blur(12px);
+  animation: float 5s ease-in-out infinite;
+  position: relative;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+.verified-badge-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--verified);
+  color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 0.68rem; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.3rem 0.8rem; border-radius: 3px;
+  margin-bottom: 1.2rem;
+}
+
+.card-header {
+  display: flex; align-items: center; gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+.avatar-lg {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--saffron), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900; font-size: 1.1rem; color: #1A0F00;
+  flex-shrink: 0;
+}
+.card-name-block h3 {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+}
+.card-name-block p { font-size: 0.77rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+/* Trust Score */
+.trust-score-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(0,200,150,0.06);
+  border: 1px solid rgba(0,200,150,0.15);
+  border-radius: 8px; padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+}
+.ts-label { font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+.ts-score {
+  font-family: 'Unbounded', sans-serif; font-size: 1.1rem; font-weight: 900;
+  color: var(--verified);
+}
+.ts-bar {
+  width: 100%; height: 4px;
+  background: rgba(0,200,150,0.1);
+  border-radius: 2px; margin-top: 0.4rem; overflow: hidden;
+}
+.ts-fill {
+  height: 100%; width: 96%;
+  background: linear-gradient(90deg, var(--verified), #00FF9E);
+  border-radius: 2px;
+  animation: growBar 2s 1s ease forwards;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+@keyframes growBar { to { transform: scaleX(1); } }
+
+.card-tags {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem;
+}
+.tag {
+  background: rgba(255,107,26,0.1);
+  border: 1px solid rgba(255,107,26,0.2);
+  color: var(--saffron);
+  font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700;
+  padding: 0.22rem 0.6rem; border-radius: 2px;
+}
+.tag.blue { background: rgba(0,180,216,0.1); border-color: rgba(0,180,216,0.25); color: var(--ganga); }
+.tag.green { background: rgba(0,200,150,0.1); border-color: rgba(0,200,150,0.25); color: var(--verified); }
+
+.card-status {
+  background: var(--bg-card);
+  border-radius: 8px; padding: 0.8rem;
+  font-size: 0.8rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--verified); flex-shrink:0; animation: blink 1.5s infinite; }
+
+/* Floating badges around card */
+.float-badge {
+  position: absolute;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-accent);
+  border-radius: 8px; padding: 0.5rem 0.9rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.7rem; font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.float-badge.top-right { top: -18px; right: -18px; color: var(--verified); border-color: rgba(0,200,150,0.3); animation: float 4s 0.5s ease-in-out infinite; }
+.float-badge.bottom-left { bottom: -18px; left: -18px; color: var(--gold); border-color: rgba(255,182,39,0.3); animation: float 4s 1.2s ease-in-out infinite; }
+
+/* ═══ TRUST STRIP ═══ */
+.trust-strip {
+  padding: 1rem 2rem;
+  background: rgba(255,107,26,0.05);
+  border-top: 1px solid rgba(255,107,26,0.12);
+  border-bottom: 1px solid rgba(255,107,26,0.12);
+  display: flex; align-items: center;
+  justify-content: center; gap: 2.5rem; flex-wrap: wrap;
+}
+.ti {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* ═══ SECTION COMMONS ═══ */
+section { padding: 5.5rem 2rem; }
+.sec { max-width: 1200px; margin: 0 auto; }
+
+.sec-label {
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--saffron); margin-bottom: 0.9rem;
+  display: flex; align-items: center; gap: 0.7rem;
+}
+.sec-label::after { content:''; width:2.5rem; height:1px; background:var(--saffron); opacity:0.4; }
+
+h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(1.9rem, 3.8vw, 3rem);
+  font-weight: 900; letter-spacing: -0.035em; line-height: 1.08;
+  margin-bottom: 1rem;
+}
+.sec-desc {
+  color: var(--text-muted); font-size: 0.95rem; line-height: 1.75;
+  max-width: 52ch; margin-bottom: 3rem;
+}
+
+/* ═══ FEATURES GRID ═══ */
+#features { background: var(--bg-primary); }
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.feat-card {
+  background: var(--bg-primary);
+  padding: 2.2rem 1.8rem;
+  transition: background 0.3s;
+  position: relative; overflow: hidden;
+}
+.feat-card::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--saffron), transparent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.35s;
+}
+.feat-card:hover { background: var(--bg-card-hover); }
+.feat-card:hover::before { transform: scaleX(1); }
+.feat-icon { font-size: 1.8rem; margin-bottom: 1rem; display:block; }
+.feat-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 0.95rem; margin-bottom: 0.55rem;
+}
+.feat-desc { font-size: 0.82rem; line-height: 1.65; color: var(--text-muted); }
+.feat-new {
+  display: inline-block;
+  background: var(--saffron); color: #1A0F00;
+  font-family: 'Syne', sans-serif; font-size: 0.55rem; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.15rem 0.45rem; border-radius: 2px;
+  margin-left: 0.5rem; vertical-align: middle;
+}
+
+/* ═══ TRUST SCORE SECTION ═══ */
+#trust { background: var(--bg-secondary); }
+.trust-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4rem; align-items: center;
+}
+.score-breakdown {
+  display: flex; flex-direction: column; gap: 1.2rem;
+}
+.score-row {
+  display: flex; align-items: center; gap: 1rem;
+}
+.score-row-label {
+  font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 600;
+  width: 11rem; flex-shrink: 0; color: var(--text-muted);
+}
+.score-bar-wrap {
+  flex: 1; height: 8px;
+  background: var(--border); border-radius: 4px; overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--verified), #00FF9E);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1.2s ease;
+}
+.score-bar-fill.orange { background: linear-gradient(90deg, var(--saffron), var(--gold)); }
+.score-bar-fill.blue { background: linear-gradient(90deg, var(--ganga), #48e1ff); }
+.score-val {
+  font-family: 'Unbounded', sans-serif; font-size: 0.75rem; font-weight: 800;
+  color: var(--text-primary); width: 2.5rem; text-align: right;
+}
+
+/* Overall score ring */
+.score-visual {
+  display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+}
+.score-ring-wrap { position: relative; width: 160px; height: 160px; }
+.score-ring-wrap svg { transform: rotate(-90deg); }
+.score-ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+.score-ring-fill {
+  fill: none; stroke: var(--verified); stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 408;
+  stroke-dashoffset: 408;
+  transition: stroke-dashoffset 2s ease;
+}
+.score-ring-text {
+  position: absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+.score-ring-num {
+  font-family: 'Unbounded', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--verified);
+}
+.score-ring-sub {
+  font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 600;
+  color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.badges-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+}
+.earn-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 600;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 0.4rem;
+  transition: all 0.2s;
+}
+.earn-badge:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(255,107,26,0.08); }
+.earn-badge .badge-icon { font-size: 0.9rem; }
+
+/* ═══ ONBOARDING FLOW ═══ */
+#onboarding { background: var(--bg-primary); }
+
+.onboard-flow {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 0; position: relative;
+}
+.onboard-flow::before {
+  content: '';
+  position: absolute; top: 2.5rem; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, var(--saffron), var(--ganga));
+  opacity: 0.3;
+  z-index: 0;
+}
+.onboard-step {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 0 1rem;
+  position: relative; z-index: 1;
+}
+.step-circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; margin-bottom: 1rem;
+  transition: all 0.3s; cursor: none;
+  position: relative;
+}
+.step-circle.active {
+  background: var(--saffron);
+  border-color: var(--saffron);
+  box-shadow: 0 0 20px rgba(255,107,26,0.4);
+}
+.step-circle.done {
+  background: var(--verified);
+  border-color: var(--verified);
+}
+.step-circle.done::after {
+  content: '✓';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: white;
+}
+.step-title {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.8rem; margin-bottom: 0.4rem;
+}
+.step-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Active step demo */
+.onboard-demo {
+  margin-top: 3rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+  padding: 2.5rem;
+  max-width: 600px; margin-left: auto; margin-right: auto;
+}
+.demo-step-indicator {
+  display: flex; gap: 0.5rem; margin-bottom: 2rem;
+}
+.demo-dot {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.demo-dot.active { background: var(--saffron); }
+.demo-dot.done { background: var(--verified); }
+
+.demo-content { min-height: 200px; }
+.demo-screen { display: none; }
+.demo-screen.show { display: block; animation: fadeUp 0.4s ease; }
+.demo-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;
+}
+.demo-sub { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+.upload-zone {
+  border: 2px dashed var(--border-accent);
+  border-radius: 8px; padding: 2rem;
+  text-align: center; cursor: none;
+  transition: all 0.3s;
+  color: var(--text-muted); font-size: 0.85rem;
+}
+.upload-zone:hover { border-color: var(--saffron); background: rgba(255,107,26,0.04); }
+.upload-icon { font-size: 2.5rem; margin-bottom: 0.7rem; }
+
+.interest-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
+}
+.interest-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.8rem;
+  text-align: center; cursor: none;
+  transition: all 0.2s; font-size: 0.8rem;
+  font-family: 'Syne', sans-serif; font-weight: 600;
+}
+.interest-item:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(255,107,26,0.06); }
+.interest-item.sel { border-color: var(--saffron); color: var(--saffron); background: rgba(255,107,26,0.1); }
+.interest-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.8rem;
+}
+.form-field {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.8rem 1rem;
+  color: var(--text-primary); font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; outline: none; transition: border 0.2s;
+  width: 100%;
+}
+.form-field:focus { border-color: var(--saffron); }
+.form-field::placeholder { color: var(--text-faint); }
+
+.demo-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 1.5rem;
+}
+.demo-prev, .demo-next {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem;
+  padding: 0.6rem 1.4rem; border-radius: 2px; cursor: none;
+  transition: all 0.2s;
+}
+.demo-prev {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.demo-prev:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.demo-next {
+  background: var(--saffron); color: #1A0F00; border: none;
+}
+.demo-next:hover { background: var(--gold); }
+.step-count { font-family: 'Syne', sans-serif; font-size: 0.75rem; color: var(--text-faint); }
+
+/* ═══ MAP SECTION ═══ */
+#map { background: var(--bg-secondary); }
+.map-wrap {
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: 1.5rem; height: 520px;
+}
+.map-canvas {
+  background: #0D1A10;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  position: relative; overflow: hidden;
+  cursor: none;
+}
+[data-theme="light"] .map-canvas { background: #E8F5EE; }
+
+.map-grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.map-title-overlay {
+  position: absolute; top: 1.2rem; left: 1.2rem;
+  background: var(--overlay);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* SVG map of Rishikesh area */
+.map-svg { width: 100%; height: 100%; }
+
+/* Map pin */
+.map-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: none;
+  transition: transform 0.2s;
+}
+.map-pin:hover { transform: translate(-50%, -100%) scale(1.15); }
+.map-pin-inner {
+  background: var(--saffron);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(255,107,26,0.5);
+  position: relative;
+}
+.map-pin-inner::after {
+  content: '';
+  position: absolute; bottom: -6px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px; height: 8px;
+  background: var(--saffron);
+}
+.map-pin-icon { transform: rotate(45deg); font-size: 0.85rem; }
+.map-pin.green .map-pin-inner { background: var(--verified); box-shadow: 0 4px 12px rgba(0,200,150,0.5); }
+.map-pin.green .map-pin-inner::after { background: var(--verified); }
+.map-pin.blue .map-pin-inner { background: var(--ganga); box-shadow: 0 4px 12px rgba(0,180,216,0.5); }
+.map-pin.blue .map-pin-inner::after { background: var(--ganga); }
+
+.map-tooltip {
+  position: absolute;
+  background: var(--overlay);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-accent);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+  font-size: 0.8rem; white-space: nowrap;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+  bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%);
+  min-width: 180px;
+  z-index: 10;
+}
+.map-pin:hover .map-tooltip { opacity: 1; }
+.map-tooltip h5 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem; margin-bottom: 0.25rem; }
+.map-tooltip p { color: var(--text-muted); font-size: 0.72rem; }
+.map-tooltip .t-safety { color: var(--verified); font-weight: 700; font-size: 0.7rem; margin-top: 0.3rem; font-family: 'Syne', sans-serif; }
+
+/* River path on map */
+.river-path {
+  stroke: var(--ganga);
+  stroke-width: 4;
+  fill: none;
+  opacity: 0.4;
+  stroke-dasharray: 8 4;
+  animation: dashflow 3s linear infinite;
+}
+@keyframes dashflow { to { stroke-dashoffset: -36; } }
+
+.map-legend {
+  display: flex; flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.legend-header {
+  padding: 1rem 1.2rem;
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+}
+.legend-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+.legend-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.8rem 0.7rem;
+  border-radius: 6px;
+  cursor: none; transition: background 0.2s;
+  border-bottom: 1px solid var(--border);
+}
+.legend-item:last-child { border-bottom: none; }
+.legend-item:hover { background: var(--bg-card-hover); }
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.legend-item-name {
+  font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.8rem;
+  flex: 1;
+}
+.legend-item-meta { font-size: 0.68rem; color: var(--text-faint); }
+.legend-safety {
+  font-family: 'Unbounded', sans-serif; font-size: 0.65rem; font-weight: 900;
+  padding: 0.15rem 0.4rem; border-radius: 2px;
+}
+.safe { color: var(--verified); background: rgba(0,200,150,0.1); }
+.caution { color: var(--gold); background: rgba(255,182,39,0.1); }
+
+/* ═══ SOS SECTION ═══ */
+#sos { background: linear-gradient(160deg, #1A0000 0%, var(--bg-primary) 100%); }
+.sos-grid {
+  display: grid; grid-template-columns: 1.2fr 1fr;
+  gap: 4rem; align-items: center;
+}
+
+.sos-button-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+}
+.sos-ring {
+  position: relative; width: 200px; height: 200px;
+  display: flex; align-items: center; justify-content: center;
+}
+.sos-ring::before, .sos-ring::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,59,48,0.3);
+  animation: sosPulse 2.5s ease-in-out infinite;
+}
+.sos-ring::before { width: 180px; height: 180px; animation-delay: 0s; }
+.sos-ring::after { width: 140px; height: 140px; animation-delay: 0.5s; }
+@keyframes sosPulse {
+  0%,100%{opacity:0.6;transform:scale(1)}
+  50%{opacity:0.1;transform:scale(1.08)}
+}
+
+.sos-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FF5E5E, var(--danger));
+  border: none; cursor: none;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  box-shadow: 0 0 0 0 rgba(255,59,48,0.4);
+  animation: sosBtnPulse 2.5s ease-in-out infinite;
+  transition: transform 0.15s;
+  z-index: 2;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900; font-size: 0.9rem; color: white;
+  letter-spacing: 0.05em;
+}
+.sos-btn:hover { transform: scale(1.08); }
+.sos-btn:active { transform: scale(0.95); }
+@keyframes sosBtnPulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0.4)}
+  50%{box-shadow:0 0 0 20px rgba(255,59,48,0)}
+}
+.sos-btn-icon { font-size: 1.5rem; margin-bottom: 0.2rem; }
+
+.sos-label {
+  font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700;
+  color: var(--text-muted); text-align: center;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.sos-features {
+  display: flex; flex-direction: column; gap: 1.2rem;
+}
+.sos-feat {
+  display: flex; gap: 1.2rem; align-items: flex-start;
+  padding: 1.2rem;
+  background: rgba(255,59,48,0.04);
+  border: 1px solid rgba(255,59,48,0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+.sos-feat:hover { border-color: rgba(255,59,48,0.25); background: rgba(255,59,48,0.07); }
+.sos-feat-icon { font-size: 1.5rem; flex-shrink: 0; }
+.sos-feat-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.3rem;
+}
+.sos-feat-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ═══ EVENTS CALENDAR ═══ */
+#events { background: var(--bg-primary); }
+.events-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.event-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  transition: all 0.3s; cursor: none;
+}
+.event-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.event-header {
+  padding: 1.4rem 1.5rem;
+  display: flex; gap: 1.2rem; align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+}
+.event-date-block {
+  background: var(--saffron);
+  color: #1A0F00;
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  text-align: center; flex-shrink: 0;
+  min-width: 48px;
+}
+.event-day {
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 1.3rem; line-height: 1;
+}
+.event-month {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.6rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.event-info h4 {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.3rem;
+}
+.event-meta { font-size: 0.75rem; color: var(--text-muted); }
+.event-body { padding: 1rem 1.5rem; }
+.event-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.event-tag {
+  font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 700;
+  padding: 0.2rem 0.55rem; border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.event-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.event-spots {
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+}
+.event-spots em { color: var(--verified); font-style: normal; }
+.btn-sm {
+  background: rgba(255,107,26,0.1);
+  border: 1px solid rgba(255,107,26,0.25);
+  color: var(--saffron);
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  padding: 0.45rem 0.9rem; border-radius: 2px; cursor: none;
+  transition: all 0.2s;
+}
+.btn-sm:hover { background: var(--saffron); color: #1A0F00; }
+
+/* ═══ HOSTEL DIRECTORY ═══ */
+#hostels { background: var(--bg-secondary); }
+.hostel-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+.hostel-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  transition: all 0.3s; cursor: none;
+}
+.hostel-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.18);
+}
+.hostel-img {
+  height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; position: relative;
+}
+.hostel-price-badge {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-family: 'Unbounded', sans-serif; font-size: 0.65rem; font-weight: 800;
+  color: var(--verified);
+}
+.hostel-body { padding: 1.1rem 1.2rem; }
+.hostel-name {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.92rem; margin-bottom: 0.25rem;
+}
+.hostel-loc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.7rem; }
+.hostel-amenities {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.8rem;
+}
+.amenity {
+  font-size: 0.65rem; font-family: 'Syne', sans-serif; font-weight: 600;
+  background: var(--bg-card-hover); border: 1px solid var(--border);
+  color: var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 2px;
+}
+.hostel-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 0.8rem; border-top: 1px solid var(--border);
+}
+.hostel-rating {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.85rem;
+  color: var(--gold); display: flex; align-items: center; gap: 0.3rem;
+}
+.hostel-travelers {
+  font-size: 0.72rem; color: var(--text-faint); font-family: 'Syne', sans-serif;
+}
+.hostel-travelers em { color: var(--verified); font-style: normal; }
+
+/* ═══ COMMUNITY FEED ═══ */
+#community { background: var(--bg-primary); }
+.feed-wrapper {
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+}
+.feed-posts { display: flex; flex-direction: column; gap: 1rem; }
+.post {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color 0.3s;
+}
+.post:hover { border-color: var(--border-accent); }
+.post-top {
+  padding: 1.2rem 1.4rem 0;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.p-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 0.75rem;
+  color: #1A0F00; flex-shrink: 0;
+}
+.p-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; }
+.p-meta { font-size: 0.72rem; color: var(--text-faint); }
+.p-vbadge {
+  margin-left: auto;
+  background: var(--verified); color: white;
+  font-family: 'Syne', sans-serif; font-size: 0.55rem; font-weight: 800;
+  padding: 0.15rem 0.45rem; border-radius: 2px; letter-spacing: 0.08em;
+}
+.post-text {
+  padding: 0.8rem 1.4rem;
+  font-size: 0.85rem; line-height: 1.65; color: var(--text-muted);
+}
+.post-img-strip {
+  height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem;
+  margin: 0 1.4rem 0.8rem;
+  border-radius: 8px;
+}
+.post-actions {
+  display: flex; gap: 0;
+  border-top: 1px solid var(--border);
+}
+.p-action {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem;
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 600;
+  color: var(--text-faint); cursor: none;
+  transition: all 0.2s;
+  border-right: 1px solid var(--border);
+}
+.p-action:last-child { border-right: none; }
+.p-action:hover { color: var(--saffron); background: rgba(255,107,26,0.04); }
+.p-action.liked { color: var(--danger); }
+
+/* Feed sidebar */
+.feed-sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+.sidebar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+}
+.sidebar-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.8rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 1rem;
+}
+.who-row {
+  display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border); cursor: none;
+  transition: background 0.2s; margin: 0 -0.3rem; padding: 0.5rem 0.3rem; border-radius: 6px;
+}
+.who-row:last-child { border-bottom: none; }
+.who-row:hover { background: var(--bg-card-hover); }
+.who-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 0.7rem; color: #1A0F00;
+  flex-shrink: 0;
+}
+.who-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem; flex:1; }
+.who-tag { font-size: 0.65rem; color: var(--text-faint); }
+.who-connect {
+  font-size: 0.65rem; font-family: 'Syne', sans-serif; font-weight: 700;
+  color: var(--saffron); background: rgba(255,107,26,0.1);
+  border: 1px solid rgba(255,107,26,0.2); padding: 0.2rem 0.55rem; border-radius: 2px;
+  cursor: none; transition: all 0.2s;
+}
+.who-connect:hover { background: var(--saffron); color: #1A0F00; }
+
+.trending-tag-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.trend-item {
+  display: flex; align-items: center; gap: 0.6rem; cursor: none;
+  padding: 0.4rem; border-radius: 4px; transition: background 0.2s;
+}
+.trend-item:hover { background: var(--bg-card-hover); }
+.trend-hash { color: var(--saffron); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem; flex:1; }
+.trend-count { font-size: 0.7rem; color: var(--text-faint); }
+
+/* ═══ LIVE CHAT ═══ */
+.chat-widget {
+  position: fixed;
+  bottom: 5rem; right: 1.5rem;
+  z-index: 4000;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 0.8rem;
+}
+.chat-bubble-btn {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--saffron);
+  border: none; cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 6px 20px rgba(255,107,26,0.4);
+  transition: all 0.2s;
+  position: relative;
+}
+.chat-bubble-btn:hover { transform: scale(1.08); background: var(--gold); }
+.chat-notif {
+  position: absolute; top: -4px; right: -4px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--danger); color: white;
+  font-family: 'Syne', sans-serif; font-size: 0.55rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.chat-panel {
+  width: 300px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  display: none;
+  flex-direction: column;
+  max-height: 420px;
+}
+.chat-panel.open { display: flex; animation: fadeUp 0.3s ease; }
+.chat-header {
+  padding: 1rem 1.2rem;
+  background: var(--saffron);
+  display: flex; align-items: center; gap: 0.7rem;
+  color: #1A0F00;
+}
+.chat-header-av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(26,15,0,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.chat-header-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.85rem; flex:1; }
+.chat-close { font-size: 1.1rem; cursor: none; opacity: 0.7; transition: opacity 0.2s; }
+.chat-close:hover { opacity: 1; }
+.chat-msgs {
+  flex: 1; overflow-y: auto; padding: 1rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+}
+.msg { display: flex; flex-direction: column; }
+.msg.them { align-items: flex-start; }
+.msg.me { align-items: flex-end; }
+.msg-bubble {
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.8rem; line-height: 1.5;
+  max-width: 80%;
+}
+.msg.them .msg-bubble { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+.msg.me .msg-bubble { background: var(--saffron); color: #1A0F00; }
+.msg-time { font-size: 0.62rem; color: var(--text-faint); margin-top: 0.2rem; font-family: 'Syne', sans-serif; }
+.chat-input-row {
+  padding: 0.8rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 0.5rem;
+}
+.chat-input {
+  flex: 1; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.55rem 0.8rem;
+  color: var(--text-primary); font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+  outline: none;
+}
+.chat-input:focus { border-color: var(--saffron); }
+.chat-send {
+  background: var(--saffron); border: none; border-radius: 6px;
+  width: 36px; cursor: none; font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.chat-send:hover { background: var(--gold); }
+
+/* ═══ MOBILE BOTTOM NAV ═══ */
+.mobile-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 4000;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: none;
+  padding: 0.6rem 0 0.8rem;
+}
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+  nav .nav-links, nav .nav-cta { display: none; }
+  body { padding-bottom: 5rem; }
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .trust-grid, .sos-grid, .events-grid, .map-wrap, .feed-wrapper { grid-template-columns: 1fr; }
+  .hostel-grid { grid-template-columns: 1fr 1fr; }
+  .match-intro { grid-template-columns: 1fr; }
+  .onboard-flow { grid-template-columns: repeat(3,1fr); }
+  .map-legend { display: none; }
+  .chat-widget { bottom: 6rem; }
+}
+.mobile-nav-items {
+  display: flex; width: 100%; list-style: none;
+}
+.mob-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.25rem; cursor: none;
+  font-family: 'Syne', sans-serif; font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-faint);
+  transition: color 0.2s;
+  padding: 0.3rem 0;
+}
+.mob-item:hover, .mob-item.active { color: var(--saffron); }
+.mob-icon { font-size: 1.1rem; }
+
+/* ═══ CTA ═══ */
+#cta {
+  text-align: center; padding: 8rem 2rem;
+  background: linear-gradient(160deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  position: relative; overflow: hidden;
+}
+#cta::before {
+  content: '';
+  position: absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,26,0.06), transparent 70%);
+}
+.cta-i { position: relative; z-index: 1; }
+.cta-eyebrow {
+  font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--saffron);
+  margin-bottom: 1.2rem;
+}
+.cta-h {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+  margin-bottom: 1.2rem;
+  max-width: 16ch; margin-left: auto; margin-right: auto;
+}
+.cta-sub { color: var(--text-muted); font-size: 1rem; max-width: 44ch; margin: 0 auto 2.5rem; line-height: 1.75; }
+.cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ═══ FOOTER ═══ */
+footer {
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+}
+.foot-i {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;
+}
+.foot-logo { font-family: 'Unbounded', sans-serif; font-size: 1rem; font-weight: 900; }
+.foot-logo span { color: var(--saffron); }
+.foot-links { display: flex; gap: 1.5rem; list-style: none; }
+.foot-links a { font-size: 0.75rem; font-family: 'Syne', sans-serif; color: var(--text-faint); text-decoration: none; transition: color 0.2s; }
+.foot-links a:hover { color: var(--saffron); }
+.foot-copy { font-size: 0.72rem; color: var(--text-faint); font-family: 'Syne', sans-serif; }
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(24px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══ JOURNAL ═══ */
+#journal { background: var(--bg-primary); }
+.journal-grid {
+  display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem;
+}
+
+.journal-featured {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 12px; overflow: hidden;
+}
+.journal-featured-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;
+}
+.jf-author { display: flex; align-items: center; gap: 0.9rem; }
+.jf-avatar {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 0.95rem;
+  color: #1A0F00; flex-shrink: 0;
+}
+.jf-name {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.92rem;
+}
+.jf-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+.j-vbadge {
+  background: var(--verified); color: white;
+  font-size: 0.5rem; font-weight: 800; font-family: 'Syne', sans-serif;
+  padding: 0.12rem 0.4rem; border-radius: 2px; letter-spacing: 0.1em;
+  vertical-align: middle; margin-left: 0.4rem;
+}
+.jf-langs { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+/* Language + Skill Badges */
+.lang-badge {
+  background: rgba(0,180,216,0.08);
+  border: 1px solid rgba(0,180,216,0.2);
+  color: var(--ganga);
+  font-family: 'Syne', sans-serif; font-size: 0.67rem; font-weight: 700;
+  padding: 0.22rem 0.55rem; border-radius: 2px;
+}
+.skill-badge {
+  background: rgba(255,182,39,0.08);
+  border-color: rgba(255,182,39,0.25);
+  color: var(--gold);
+}
+
+.jf-title {
+  padding: 1.2rem 1.5rem 0;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+/* Day selector */
+.jf-days {
+  display: flex; gap: 0; padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.jday {
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  padding: 0.3rem 0.8rem; cursor: none;
+  position: relative; flex-shrink: 0;
+  transition: color 0.2s;
+}
+.jday-label {
+  font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700;
+  color: var(--text-faint); transition: color 0.2s;
+  white-space: nowrap;
+}
+.jday-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--border); transition: background 0.2s, transform 0.2s;
+}
+.jday.active .jday-label { color: var(--saffron); }
+.jday.active .jday-dot { background: var(--saffron); transform: scale(1.4); }
+.jday:hover .jday-label { color: var(--text-primary); }
+
+/* Journal entries */
+.jf-entries { padding: 0; }
+.jentry { display: none; padding: 1.5rem; animation: fadeUp 0.35s ease; }
+.jentry.show { display: block; }
+.jentry-header {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem;
+}
+.jentry-date {
+  font-family: 'Unbounded', sans-serif; font-size: 0.68rem; font-weight: 900;
+  color: var(--saffron);
+}
+.jentry-loc { font-size: 0.75rem; color: var(--text-muted); }
+.jentry-text {
+  font-size: 0.88rem; line-height: 1.8;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.jentry-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.jtag {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 700;
+  color: var(--text-faint); padding: 0.2rem 0.55rem; border-radius: 2px;
+}
+.jtag.budget { color: var(--verified); border-color: rgba(0,200,150,0.2); background: rgba(0,200,150,0.06); }
+
+/* Journal sidebar */
+.journal-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+.journal-mini {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.2rem;
+  transition: border-color 0.3s;
+}
+.journal-mini:hover { border-color: var(--border-accent); }
+.jm-header {
+  display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem;
+}
+.jm-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 0.75rem;
+  color: #1A0F00; flex-shrink: 0;
+}
+.jm-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.82rem; flex: 1; }
+.jm-meta { font-size: 0.7rem; color: var(--text-faint); }
+.live-now-badge {
+  font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 700;
+  color: var(--verified); background: rgba(0,200,150,0.1);
+  border: 1px solid rgba(0,200,150,0.2); padding: 0.15rem 0.45rem; border-radius: 2px;
+  white-space: nowrap;
+}
+.jm-langs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.7rem; }
+.jm-excerpt {
+  font-size: 0.78rem; line-height: 1.6; color: var(--text-muted);
+  font-style: italic; margin-bottom: 0.8rem;
+  border-left: 2px solid var(--saffron); padding-left: 0.8rem;
+}
+.jm-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.jm-days { font-size: 0.7rem; color: var(--text-faint); font-family: 'Syne', sans-serif; }
+
+.journal-write-cta {
+  background: linear-gradient(135deg, rgba(255,107,26,0.08), rgba(0,200,150,0.05));
+  border: 1px solid var(--border-accent);
+  border-radius: 10px; padding: 1.5rem; text-align: center;
+}
+.jwc-icon { font-size: 2.5rem; margin-bottom: 0.7rem; }
+.jwc-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem; }
+.jwc-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .journal-grid { grid-template-columns: 1fr; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(255,107,26,0.25); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="logo">Safe<span>Wander</span><sup>v2</sup></div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#onboarding">Get Verified</a></li>
+    <li><a href="#map">Map</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#journal">Journals</a></li>
+    <li><a href="#community">Community</a></li>
+    <li><a href="#sos">SOS</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+      <span class="theme-icon" id="themeIcon">🌙</span>
+    </button>
+    <button class="nav-cta">Join Waitlist</button>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <svg style="position:absolute;bottom:0;left:0;right:0;height:45%;opacity:0.18" viewBox="0 0 1440 300" preserveAspectRatio="none">
+    <path d="M0,300 L0,180 L100,90 L180,140 L300,50 L400,120 L520,35 L630,100 L750,55 L860,130 L980,45 L1100,135 L1220,65 L1340,140 L1440,90 L1440,300Z" fill="rgba(255,107,26,0.5)"/>
+    <path d="M0,300 L0,230 L160,150 L260,195 L380,125 L490,178 L610,105 L720,162 L840,92 L950,162 L1070,112 L1190,178 L1310,128 L1440,165 L1440,300Z" fill="rgba(255,245,230,0.08)"/>
+  </svg>
+  <div class="hero-ganga"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="live-pill"><span class="live-dot"></span> 247 Travelers Active Now in Rishikesh</div>
+      <div class="eyebrow">Rishikesh Travel Network</div>
+      <h1>
+        Travel Safe.<br>
+        <span class="line-saffron">Connect Real.</span>
+        Explore <span class="line-ganga">Free.</span>
+      </h1>
+      <p class="hero-desc">The only verified social network for solo travelers & backpackers in Rishikesh — criminal background checks, real community, trusted connections.</p>
+      <div class="hero-btns">
+        <button class="btn-primary">🎒 Join as Traveler →</button>
+        <button class="btn-secondary">How It Works</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-n">2.4<em>K</em></div><div class="stat-l">Verified Travelers</div></div>
+        <div class="stat"><div class="stat-n">98<em>%</em></div><div class="stat-l">Safety Rating</div></div>
+        <div class="stat"><div class="stat-n">340<em>+</em></div><div class="stat-l">Connections Made</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="profile-card">
+        <div class="float-badge top-right">🛡️ Background Cleared</div>
+        <div class="float-badge bottom-left">⭐ Trust Score: 9.6/10</div>
+        <div class="verified-badge-pill">✓ Verified Traveler</div>
+        <div class="card-header">
+          <div class="avatar-lg">AP</div>
+          <div class="card-name-block">
+            <h3>Arjun Pathak</h3>
+            <p>📍 Rishikesh Now · From Pune</p>
+          </div>
+        </div>
+        <div class="trust-score-row">
+          <div>
+            <div class="ts-label">Trust Score</div>
+            <div class="ts-bar"><div class="ts-fill"></div></div>
+          </div>
+          <div class="ts-score">9.6</div>
+        </div>
+        <div class="card-tags">
+          <span class="tag">🏔 Trekking</span>
+          <span class="tag">🧘 Yoga</span>
+          <span class="tag blue">🌊 Rafting</span>
+          <span class="tag green">🔥 Aarti</span>
+        </div>
+        <div class="card-status">
+          <div class="status-dot"></div>
+          Looking for trek buddy · Kedarnath · Nov 12
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Strip -->
+<div class="trust-strip">
+  <div class="ti">🛡️ Criminal Check</div>
+  <div class="ti">🪪 Govt ID</div>
+  <div class="ti">📍 Rishikesh Only</div>
+  <div class="ti">⭐ Trust Scores</div>
+  <div class="ti">🚨 SOS Button</div>
+  <div class="ti">🔔 Safety Alerts</div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<section id="features">
+  <div class="sec">
+    <div class="sec-label">What We Offer</div>
+    <h2>Everything a Solo<br>Traveler Needs</h2>
+    <p class="sec-desc">Built for the Rishikesh traveling community with safety, connection, and adventure as the core pillars.</p>
+    <div class="feat-grid">
+      <div class="feat-card reveal">
+        <span class="feat-icon">🛡️</span>
+        <div class="feat-title">Criminal Background Check</div>
+        <p class="feat-desc">Every member verified via government databases before joining. Full transparency on who you connect with.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">⭐</span>
+        <div class="feat-title">Trust Score System <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">Dynamic reputation score built from reviews, trips completed, and community interactions. See who's truly trustworthy.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🚨</span>
+        <div class="feat-title">Emergency SOS Button <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">One-tap SOS broadcasts your location to nearby verified travelers, local authorities, and your emergency contacts.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🗺️</span>
+        <div class="feat-title">Interactive Safety Map <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">Live map of Rishikesh showing safe zones, active travelers, community-rated spots, and real-time safety alerts.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">📅</span>
+        <div class="feat-title">Events & Group Trips <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">Browse and join verified group treks, yoga retreats, rafting trips, and Ganga Aarti gatherings.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🏕️</span>
+        <div class="feat-title">Hostel Directory <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">Community-reviewed hostels, camps, and guesthouses. Find who's staying where and connect before you arrive.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">🌐</span>
+        <div class="feat-title">Language Badges</div>
+        <p class="feat-desc">Declare the languages you speak. Filter travelers by language to find buddies who can communicate naturally.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">📓</span>
+        <div class="feat-title">Travel Journal <span class="feat-new">NEW</span></div>
+        <p class="feat-desc">Document your Rishikesh journey day by day. Share routes, hidden spots, and personal stories with the community.</p>
+      </div>
+      <div class="feat-card reveal">
+        <span class="feat-icon">💬</span>
+        <div class="feat-title">Live Chat</div>
+        <p class="feat-desc">Encrypted chat between verified members only. No spam, no strangers — real conversations, real connections.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TRUST SCORE ══ -->
+<section id="trust">
+  <div class="sec">
+    <div class="trust-grid">
+      <div>
+        <div class="sec-label">Reputation System</div>
+        <h2>Your Trust Score<br>Opens Doors</h2>
+        <p class="sec-desc">Every interaction, review, and verified trip builds your Trust Score. Travelers with higher scores get more connections, priority in buddy matching, and exclusive group access.</p>
+        <div class="score-breakdown">
+          <div class="score-row"><span class="score-row-label">Criminal Background</span><div class="score-bar-wrap"><div class="score-bar-fill" style="width:100%" data-width="100"></div></div><span class="score-val">100%</span></div>
+          <div class="score-row"><span class="score-row-label">Identity Verified</span><div class="score-bar-wrap"><div class="score-bar-fill" style="width:100%" data-width="100"></div></div><span class="score-val">100%</span></div>
+          <div class="score-row"><span class="score-row-label">Community Reviews</span><div class="score-bar-wrap"><div class="score-bar-fill orange" data-width="92"></div></div><span class="score-val">92%</span></div>
+          <div class="score-row"><span class="score-row-label">Trips Completed</span><div class="score-bar-wrap"><div class="score-bar-fill blue" data-width="85"></div></div><span class="score-val">85%</span></div>
+          <div class="score-row"><span class="score-row-label">Response Rate</span><div class="score-bar-wrap"><div class="score-bar-fill orange" data-width="97"></div></div><span class="score-val">97%</span></div>
+        </div>
+      </div>
+      <div class="score-visual">
+        <div class="score-ring-wrap" id="scoreRingWrap">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle class="score-ring-bg" cx="80" cy="80" r="65"/>
+            <circle class="score-ring-fill" id="scoreRing" cx="80" cy="80" r="65"/>
+          </svg>
+          <div class="score-ring-text">
+            <div class="score-ring-num">9.4</div>
+            <div class="score-ring-sub">Trust Score</div>
+          </div>
+        </div>
+        <div class="badges-row">
+          <div class="earn-badge"><span class="badge-icon">🏆</span> Top Traveler</div>
+          <div class="earn-badge"><span class="badge-icon">🛡️</span> Fully Verified</div>
+          <div class="earn-badge"><span class="badge-icon">⚡</span> Quick Responder</div>
+          <div class="earn-badge"><span class="badge-icon">🌟</span> 5-Star Rated</div>
+          <div class="earn-badge"><span class="badge-icon">🏔</span> Trek Expert</div>
+          <div class="earn-badge"><span class="badge-icon">🤝</span> 10+ Connections</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ONBOARDING ══ -->
+<section id="onboarding">
+  <div class="sec">
+    <div class="sec-label">Join SafeWander</div>
+    <h2>Get Verified in<br>5 Simple Steps</h2>
+    <p class="sec-desc">Our streamlined onboarding gets you verified and connected with the Rishikesh community in under 10 minutes.</p>
+
+    <div class="onboard-flow">
+      <div class="onboard-step">
+        <div class="step-circle done" id="sc1">🪪</div>
+        <div class="step-title">Upload ID</div>
+        <div class="step-desc">Govt-issued ID for identity verification</div>
+      </div>
+      <div class="onboard-step">
+        <div class="step-circle active" id="sc2">🤳</div>
+        <div class="step-title">Selfie Check</div>
+        <div class="step-desc">AI liveness detection & face match</div>
+      </div>
+      <div class="onboard-step">
+        <div class="step-circle" id="sc3">🔍</div>
+        <div class="step-title">Background</div>
+        <div class="step-desc">Automated criminal record search</div>
+      </div>
+      <div class="onboard-step">
+        <div class="step-circle" id="sc4">🎒</div>
+        <div class="step-title">Travel Profile</div>
+        <div class="step-desc">Your style, interests & upcoming trips</div>
+      </div>
+      <div class="onboard-step">
+        <div class="step-circle" id="sc5">✅</div>
+        <div class="step-title">Go Live</div>
+        <div class="step-desc">Join the community & start connecting</div>
+      </div>
+    </div>
+
+    <div class="onboard-demo">
+      <div class="demo-step-indicator">
+        <div class="demo-dot done" id="dd1"></div>
+        <div class="demo-dot active" id="dd2"></div>
+        <div class="demo-dot" id="dd3"></div>
+        <div class="demo-dot" id="dd4"></div>
+        <div class="demo-dot" id="dd5"></div>
+      </div>
+      <div class="demo-content">
+        <!-- Step 1 -->
+        <div class="demo-screen" id="ds1">
+          <div class="demo-title">Upload Your Government ID</div>
+          <div class="demo-sub">Aadhaar, Passport, or Driving License accepted</div>
+          <div class="upload-zone">
+            <div class="upload-icon">🪪</div>
+            <div style="font-weight:600;margin-bottom:0.3rem">Drag & drop or click to upload</div>
+            <div style="font-size:0.75rem;color:var(--text-faint)">JPG, PNG, PDF · Max 5MB · Encrypted & secure</div>
+          </div>
+        </div>
+        <!-- Step 2 (active) -->
+        <div class="demo-screen show" id="ds2">
+          <div class="demo-title">Selfie Liveness Check</div>
+          <div class="demo-sub">Take a live selfie to verify you're a real person matching your ID</div>
+          <div class="upload-zone" style="padding:2.5rem">
+            <div class="upload-icon">🤳</div>
+            <div style="font-weight:600;margin-bottom:0.3rem">Click to open camera</div>
+            <div style="font-size:0.75rem;color:var(--text-faint);margin-bottom:1rem">AI will check: liveness, face match, ID match</div>
+            <button class="btn-primary" style="margin:0 auto">Open Camera →</button>
+          </div>
+        </div>
+        <!-- Step 3 -->
+        <div class="demo-screen" id="ds3">
+          <div class="demo-title">Background Check Running</div>
+          <div class="demo-sub">Automated search across national crime databases — usually takes 2–3 minutes</div>
+          <div style="text-align:center;padding:2rem">
+            <div style="font-size:3rem;margin-bottom:1rem">🔍</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--verified);margin-bottom:0.5rem">Checking records...</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Searching 12 national databases<br>This is done securely and privately</div>
+          </div>
+        </div>
+        <!-- Step 4 -->
+        <div class="demo-screen" id="ds4">
+          <div class="demo-title">Build Your Travel Profile</div>
+          <div class="demo-sub">Tell the community who you are and what you're here for</div>
+          <div class="form-row">
+            <input class="form-field" placeholder="Full Name" />
+            <input class="form-field" placeholder="Home City" />
+          </div>
+          <div class="form-row">
+            <input class="form-field" placeholder="Travel Style (e.g. Backpacker)" />
+            <input class="form-field" placeholder="Languages Spoken" />
+          </div>
+          <div class="interest-grid">
+            <div class="interest-item sel"><span class="interest-icon">🏔</span>Trekking</div>
+            <div class="interest-item"><span class="interest-icon">🌊</span>Rafting</div>
+            <div class="interest-item sel"><span class="interest-icon">🧘</span>Yoga</div>
+            <div class="interest-item"><span class="interest-icon">🏕</span>Camping</div>
+            <div class="interest-item"><span class="interest-icon">🔥</span>Aarti</div>
+            <div class="interest-item"><span class="interest-icon">🎸</span>Music</div>
+          </div>
+        </div>
+        <!-- Step 5 -->
+        <div class="demo-screen" id="ds5">
+          <div style="text-align:center;padding:1.5rem 0">
+            <div style="font-size:3.5rem;margin-bottom:1rem">🎉</div>
+            <div style="font-family:'Unbounded',sans-serif;font-size:1.2rem;font-weight:900;margin-bottom:0.5rem">You're Verified!</div>
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem">Welcome to the SafeWander community.<br>Your Verified badge is now live on your profile.</div>
+            <div class="verified-badge-pill" style="display:inline-flex;margin-bottom:1.5rem">✓ Verified Traveler · SafeWander ID: SW-2024-RK-05914</div>
+            <br>
+            <button class="btn-primary" style="margin:0 auto">Explore Community →</button>
+          </div>
+        </div>
+      </div>
+      <div class="demo-nav">
+        <button class="demo-prev" id="demoPrev">← Back</button>
+        <span class="step-count" id="stepCount">Step 2 of 5</span>
+        <button class="demo-next" id="demoNext">Continue →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ INTERACTIVE MAP ══ -->
+<section id="map">
+  <div class="sec">
+    <div class="sec-label">Safety Map</div>
+    <h2>Live Rishikesh<br>Safety Map</h2>
+    <p class="sec-desc">Community-powered map showing active travelers, safe zones, points of interest, and real-time safety alerts.</p>
+    <div class="map-wrap">
+      <div class="map-canvas" id="mapCanvas">
+        <div class="map-grid-lines"></div>
+        <div class="map-title-overlay">🗺️ Rishikesh · Live View</div>
+        <!-- SVG Map -->
+        <svg class="map-svg" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background terrain -->
+          <rect width="800" height="480" fill="transparent"/>
+          <!-- Hills/forest areas -->
+          <ellipse cx="100" cy="100" rx="150" ry="80" fill="rgba(27,58,45,0.3)"/>
+          <ellipse cx="700" cy="80" rx="130" ry="70" fill="rgba(27,58,45,0.25)"/>
+          <ellipse cx="400" cy="420" rx="200" ry="60" fill="rgba(27,58,45,0.2)"/>
+          <!-- Ganga River -->
+          <path class="river-path" d="M0,260 Q100,240 200,255 Q300,270 400,250 Q500,230 600,248 Q700,266 800,255" stroke-width="18" stroke="rgba(0,180,216,0.35)" fill="none"/>
+          <path class="river-path" stroke-dashoffset="0" d="M0,260 Q100,240 200,255 Q300,270 400,250 Q500,230 600,248 Q700,266 800,255" stroke-width="6" stroke="var(--ganga)" fill="none"/>
+          <!-- Roads -->
+          <line x1="0" y1="300" x2="800" y2="300" stroke="rgba(255,245,230,0.08)" stroke-width="2"/>
+          <line x1="400" y1="0" x2="400" y2="480" stroke="rgba(255,245,230,0.06)" stroke-width="1.5"/>
+          <line x1="200" y1="0" x2="300" y2="480" stroke="rgba(255,245,230,0.05)" stroke-width="1"/>
+          <line x1="600" y1="0" x2="500" y2="480" stroke="rgba(255,245,230,0.05)" stroke-width="1"/>
+          <!-- Ganga label -->
+          <text x="380" y="238" fill="rgba(0,180,216,0.7)" font-size="11" font-family="sans-serif" font-weight="600" letter-spacing="3">GANGA</text>
+        </svg>
+
+        <!-- Map Pins -->
+        <div class="map-pin" style="left:30%;top:38%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🌉</span></div>
+          <div class="map-tooltip">
+            <h5>Laxman Jhula</h5>
+            <p>Iconic suspension bridge</p>
+            <div class="t-safety">🟡 Caution after 9pm</div>
+          </div>
+        </div>
+        <div class="map-pin green" style="left:52%;top:40%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🔥</span></div>
+          <div class="map-tooltip">
+            <h5>Triveni Ghat</h5>
+            <p>Ganga Aarti every evening</p>
+            <div class="t-safety">🟢 Very Safe · 9.9/10</div>
+          </div>
+        </div>
+        <div class="map-pin blue" style="left:20%;top:58%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🌊</span></div>
+          <div class="map-tooltip">
+            <h5>Shivpuri Rafting</h5>
+            <p>Grade 3–4 whitewater</p>
+            <div class="t-safety">🟢 Safe · Best this week</div>
+          </div>
+        </div>
+        <div class="map-pin" style="left:65%;top:28%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🏔</span></div>
+          <div class="map-tooltip">
+            <h5>Neelkanth Trek Start</h5>
+            <p>22km mountain trail</p>
+            <div class="t-safety">🟢 Safe · Go early</div>
+          </div>
+        </div>
+        <div class="map-pin green" style="left:45%;top:62%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🧘</span></div>
+          <div class="map-tooltip">
+            <h5>Beatles Ashram</h5>
+            <p>Heritage yoga retreat</p>
+            <div class="t-safety">🟢 Safe · 9.8/10</div>
+          </div>
+        </div>
+        <div class="map-pin blue" style="left:75%;top:52%">
+          <div class="map-pin-inner"><span class="map-pin-icon">🏕</span></div>
+          <div class="map-tooltip">
+            <h5>Camping Zone</h5>
+            <p>Riverside camps · 3 verified</p>
+            <div class="t-safety">🟢 Verified Hosts</div>
+          </div>
+        </div>
+
+        <!-- Active traveler dots -->
+        <div style="position:absolute;left:35%;top:50%;width:8px;height:8px;border-radius:50%;background:var(--saffron);animation:blink 1.5s infinite;box-shadow:0 0 8px var(--saffron)"></div>
+        <div style="position:absolute;left:55%;top:45%;width:8px;height:8px;border-radius:50%;background:var(--saffron);animation:blink 1.5s 0.3s infinite;box-shadow:0 0 8px var(--saffron)"></div>
+        <div style="position:absolute;left:28%;top:60%;width:8px;height:8px;border-radius:50%;background:var(--saffron);animation:blink 1.5s 0.6s infinite;box-shadow:0 0 8px var(--saffron)"></div>
+        <div style="position:absolute;left:70%;top:35%;width:8px;height:8px;border-radius:50%;background:var(--verified);animation:blink 1.5s 0.9s infinite;box-shadow:0 0 8px var(--verified)"></div>
+        <div style="position:absolute;left:48%;top:68%;width:8px;height:8px;border-radius:50%;background:var(--saffron);animation:blink 1.5s 1.2s infinite;box-shadow:0 0 8px var(--saffron)"></div>
+      </div>
+
+      <div class="map-legend">
+        <div class="legend-header">📍 Points of Interest</div>
+        <div class="legend-list">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--saffron)"></div>
+            <div>
+              <div class="legend-item-name">Laxman Jhula</div>
+              <div class="legend-item-meta">Suspension Bridge</div>
+            </div>
+            <div class="legend-safety caution">7.2</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--verified)"></div>
+            <div>
+              <div class="legend-item-name">Triveni Ghat</div>
+              <div class="legend-item-meta">Ganga Aarti</div>
+            </div>
+            <div class="legend-safety safe">9.9</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--ganga)"></div>
+            <div>
+              <div class="legend-item-name">Shivpuri Rafting</div>
+              <div class="legend-item-meta">Adventure Sport</div>
+            </div>
+            <div class="legend-safety safe">9.1</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--saffron)"></div>
+            <div>
+              <div class="legend-item-name">Neelkanth Trek</div>
+              <div class="legend-item-meta">Mountain Trail</div>
+            </div>
+            <div class="legend-safety safe">9.4</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--verified)"></div>
+            <div>
+              <div class="legend-item-name">Beatles Ashram</div>
+              <div class="legend-item-meta">Heritage & Yoga</div>
+            </div>
+            <div class="legend-safety safe">9.8</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--ganga)"></div>
+            <div>
+              <div class="legend-item-name">Riverside Camps</div>
+              <div class="legend-item-meta">Verified Hosts</div>
+            </div>
+            <div class="legend-safety safe">9.3</div>
+          </div>
+        </div>
+        <div style="padding:0.8rem 1.2rem;border-top:1px solid var(--border);font-size:0.72rem;font-family:'Syne',sans-serif;color:var(--text-faint)">
+          🟠 Traveler Active &nbsp; 🟢 Verified Safe
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SOS ══ -->
+<section id="sos">
+  <div class="sec">
+    <div class="sec-label">Emergency Safety</div>
+    <div class="sos-grid">
+      <div>
+        <h2>One Tap SOS.<br>Instant Help.</h2>
+        <p class="sec-desc">If you ever feel unsafe, the SOS button immediately alerts nearby verified travelers, contacts the local police, and notifies your emergency contacts with your real-time GPS location.</p>
+        <div class="sos-features">
+          <div class="sos-feat reveal">
+            <div class="sos-feat-icon">📡</div>
+            <div>
+              <div class="sos-feat-title">GPS Location Broadcast</div>
+              <div class="sos-feat-desc">Your exact coordinates are shared instantly with verified travelers within 2km and local emergency services.</div>
+            </div>
+          </div>
+          <div class="sos-feat reveal">
+            <div class="sos-feat-icon">👥</div>
+            <div>
+              <div class="sos-feat-title">Community Response</div>
+              <div class="sos-feat-desc">Nearby verified members are notified and can respond, creating a human safety net around you.</div>
+            </div>
+          </div>
+          <div class="sos-feat reveal">
+            <div class="sos-feat-icon">📞</div>
+            <div>
+              <div class="sos-feat-title">Emergency Contacts Notified</div>
+              <div class="sos-feat-desc">Pre-registered emergency contacts receive an SMS with your location and a live tracking link.</div>
+            </div>
+          </div>
+          <div class="sos-feat reveal">
+            <div class="sos-feat-icon">🚓</div>
+            <div>
+              <div class="sos-feat-title">Direct Police Connect</div>
+              <div class="sos-feat-desc">One tap connects you directly to Rishikesh local police with your location pre-shared.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sos-button-wrap">
+        <div class="sos-ring">
+          <button class="sos-btn" id="sosBtn">
+            <span class="sos-btn-icon">🆘</span>
+            SOS
+          </button>
+        </div>
+        <div class="sos-label">Hold 3 seconds to activate<br>in an emergency</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ EVENTS ══ -->
+<section id="events">
+  <div class="sec">
+    <div class="sec-label">Group Events</div>
+    <h2>Join Verified Group<br>Events & Trips</h2>
+    <p class="sec-desc">Browse upcoming treks, yoga retreats, river activities, and cultural events organized by verified community members.</p>
+    <div class="events-grid">
+      <div class="event-card reveal">
+        <div class="event-header">
+          <div class="event-date-block" style="background:var(--saffron)">
+            <div class="event-day">12</div>
+            <div class="event-month">Nov</div>
+          </div>
+          <div class="event-info">
+            <h4>Kedarnath Base Camp Trek</h4>
+            <div class="event-meta">📍 Starts Rishikesh Bus Stand · 4 Days · Moderate</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tags">
+            <span class="event-tag">🏔 Trekking</span>
+            <span class="event-tag">🏕 Camping</span>
+            <span class="event-tag">Verified Guide</span>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">4-day guided trek to Kedarnath base camp with verified guide. All equipment provided. Maximum 8 people.</p>
+        </div>
+        <div class="event-footer">
+          <div class="event-spots"><em>3 spots left</em> of 8</div>
+          <button class="btn-sm">Join Trip</button>
+        </div>
+      </div>
+      <div class="event-card reveal">
+        <div class="event-header">
+          <div class="event-date-block" style="background:var(--ganga)">
+            <div class="event-day">15</div>
+            <div class="event-month">Nov</div>
+          </div>
+          <div class="event-info">
+            <h4>Morning Yoga Retreat · 7 Days</h4>
+            <div class="event-meta">📍 Parmarth Niketan · Sunrise Sessions</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tags">
+            <span class="event-tag">🧘 Yoga</span>
+            <span class="event-tag">🌅 Meditation</span>
+            <span class="event-tag">Beginner OK</span>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">7-day immersive yoga retreat at Parmarth Niketan. Daily sunrise sessions, meditation, Ganga Aarti evenings.</p>
+        </div>
+        <div class="event-footer">
+          <div class="event-spots"><em>5 spots left</em> of 12</div>
+          <button class="btn-sm">Join Retreat</button>
+        </div>
+      </div>
+      <div class="event-card reveal">
+        <div class="event-header">
+          <div class="event-date-block" style="background:var(--verified)">
+            <div class="event-day">10</div>
+            <div class="event-month">Nov</div>
+          </div>
+          <div class="event-info">
+            <h4>Shivpuri Rafting Group</h4>
+            <div class="event-meta">📍 Shivpuri · 16km · Grade 3–4</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tags">
+            <span class="event-tag">🌊 Rafting</span>
+            <span class="event-tag">⚡ Adventure</span>
+            <span class="event-tag">All Levels</span>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">Group rafting trip from Shivpuri to Rishikesh. Certified instructor, all safety gear provided. Epic fun guaranteed.</p>
+        </div>
+        <div class="event-footer">
+          <div class="event-spots"><em>7 spots left</em> of 10</div>
+          <button class="btn-sm">Join Now</button>
+        </div>
+      </div>
+      <div class="event-card reveal">
+        <div class="event-header">
+          <div class="event-date-block" style="background:var(--gold)">
+            <div class="event-day">18</div>
+            <div class="event-month">Nov</div>
+          </div>
+          <div class="event-info">
+            <h4>Ganga Aarti & Bonfire Night</h4>
+            <div class="event-meta">📍 Triveni Ghat · Evening to Midnight</div>
+          </div>
+        </div>
+        <div class="event-body">
+          <div class="event-tags">
+            <span class="event-tag">🔥 Cultural</span>
+            <span class="event-tag">🎸 Music</span>
+            <span class="event-tag">Free Event</span>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6">Community gathering at Triveni Ghat. Watch Ganga Aarti together, followed by riverside bonfire and music jam.</p>
+        </div>
+        <div class="event-footer">
+          <div class="event-spots"><em>Open</em> · All welcome</div>
+          <button class="btn-sm">RSVP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOSTELS ══ -->
+<section id="hostels" style="background:var(--bg-secondary)">
+  <div class="sec">
+    <div class="sec-label">Stay Directory</div>
+    <h2>Verified Hostels<br>& Camps</h2>
+    <p class="sec-desc">Community-reviewed places to stay in Rishikesh. Find who's staying where, connect before you arrive.</p>
+    <div class="hostel-grid">
+      <div class="hostel-card reveal">
+        <div class="hostel-img" style="background:linear-gradient(135deg,#1B3A2D,#0A2015)">
+          🏕
+          <div class="hostel-price-badge">₹350/night</div>
+        </div>
+        <div class="hostel-body">
+          <div class="hostel-name">Riverside Camp Shivpuri</div>
+          <div class="hostel-loc">📍 Shivpuri Beach · 3km from town</div>
+          <div class="hostel-amenities">
+            <span class="amenity">🔥 Bonfire</span>
+            <span class="amenity">🌊 River View</span>
+            <span class="amenity">🎸 Music</span>
+            <span class="amenity">🍳 Meals</span>
+          </div>
+          <div class="hostel-footer">
+            <div class="hostel-rating">⭐ 4.9</div>
+            <div class="hostel-travelers"><em>12 travelers</em> this week</div>
+            <button class="btn-sm">View</button>
+          </div>
+        </div>
+      </div>
+      <div class="hostel-card reveal">
+        <div class="hostel-img" style="background:linear-gradient(135deg,#2A1500,#3D2500)">
+          🏠
+          <div class="hostel-price-badge">₹550/night</div>
+        </div>
+        <div class="hostel-body">
+          <div class="hostel-name">Ganga View Hostel</div>
+          <div class="hostel-loc">📍 Laxman Jhula Road</div>
+          <div class="hostel-amenities">
+            <span class="amenity">🌅 Rooftop</span>
+            <span class="amenity">☕ Café</span>
+            <span class="amenity">📶 WiFi</span>
+            <span class="amenity">🔒 Locker</span>
+          </div>
+          <div class="hostel-footer">
+            <div class="hostel-rating">⭐ 4.7</div>
+            <div class="hostel-travelers"><em>8 travelers</em> now</div>
+            <button class="btn-sm">View</button>
+          </div>
+        </div>
+      </div>
+      <div class="hostel-card reveal">
+        <div class="hostel-img" style="background:linear-gradient(135deg,#0D1A2A,#1A2A40)">
+          🏔
+          <div class="hostel-price-badge">₹800/night</div>
+        </div>
+        <div class="hostel-body">
+          <div class="hostel-name">Mountain Retreat Hostel</div>
+          <div class="hostel-loc">📍 Tapovan · Hillside</div>
+          <div class="hostel-amenities">
+            <span class="amenity">🧘 Yoga Hall</span>
+            <span class="amenity">🌿 Garden</span>
+            <span class="amenity">🍃 Organic</span>
+          </div>
+          <div class="hostel-footer">
+            <div class="hostel-rating">⭐ 4.8</div>
+            <div class="hostel-travelers"><em>5 travelers</em> now</div>
+            <button class="btn-sm">View</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TRAVEL JOURNAL ══ -->
+<section id="journal">
+  <div class="sec">
+    <div class="sec-label">Trip Diaries</div>
+    <h2>Travel Journals<br>From the Trail</h2>
+    <p class="sec-desc">Verified travelers documenting their Rishikesh journeys — day by day, trail by trail. Real stories, real routes, real wisdom.</p>
+
+    <div class="journal-grid">
+
+      <!-- Featured journal -->
+      <div class="journal-featured reveal">
+        <div class="journal-featured-header">
+          <div class="jf-author">
+            <div class="jf-avatar" style="background:linear-gradient(135deg,var(--saffron),var(--gold))">AP</div>
+            <div>
+              <div class="jf-name">Arjun Pathak <span class="j-vbadge">VERIFIED</span></div>
+              <div class="jf-meta">📍 Currently in Rishikesh · Solo · From Pune</div>
+            </div>
+          </div>
+          <div class="jf-langs">
+            <span class="lang-badge">🇮🇳 Hindi</span>
+            <span class="lang-badge">🇬🇧 English</span>
+            <span class="lang-badge skill-badge">🏔 Trek Expert</span>
+          </div>
+        </div>
+        <div class="jf-title">8 Days Solo in Rishikesh — A Complete Backpacker's Log</div>
+        <div class="jf-days">
+          <div class="jday active" data-day="1">
+            <div class="jday-label">Day 1</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="2">
+            <div class="jday-label">Day 2</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="3">
+            <div class="jday-label">Day 3</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="4">
+            <div class="jday-label">Day 4</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="5">
+            <div class="jday-label">Day 5</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="6">
+            <div class="jday-label">Day 6</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="7">
+            <div class="jday-label">Day 7</div>
+            <div class="jday-dot"></div>
+          </div>
+          <div class="jday" data-day="8">
+            <div class="jday-label">Day 8</div>
+            <div class="jday-dot"></div>
+          </div>
+        </div>
+        <div class="jf-entries">
+          <div class="jentry show" data-entry="1">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 5 · Day 1</div>
+              <div class="jentry-loc">📍 Rishikesh Bus Stand → Laxman Jhula</div>
+            </div>
+            <div class="jentry-text">Arrived by overnight bus at 5am. The air smells like incense and river. Dumped bags at a hostel I found via SafeWander — Ganga View — and was immediately chatting with 3 other solo travelers staying there. First rule of Rishikesh: the community finds you before you find it. Walked to Laxman Jhula at sunrise. Completely deserted. Just me, the bridge swaying, and the Ganga below.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🌅 Arrival</span>
+              <span class="jtag">🌉 Laxman Jhula</span>
+              <span class="jtag budget">💰 ₹350 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="2">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 6 · Day 2</div>
+              <div class="jentry-loc">📍 Shivpuri Rafting Launch Point</div>
+            </div>
+            <div class="jentry-text">Joined a SafeWander group rafting session — 6 of us, all background-verified. The guide was incredible. Grade 3 rapids were manageable even for beginners. The stretch near Marine Drive had a Grade 4 section that threw everyone around. Laughed until I cried. Lunch on a sandbar with the whole group. This is what solo travel is about.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🌊 Rafting</span>
+              <span class="jtag">👥 Group of 6</span>
+              <span class="jtag budget">💰 ₹800 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="3">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 7 · Day 3</div>
+              <div class="jentry-loc">📍 Parmarth Niketan Ashram</div>
+            </div>
+            <div class="jentry-text">5am wake-up for yoga. Worth every second of sleep lost. The class overlooks the Ganga and as the sun rose behind the mountains, I completely understood why people come to Rishikesh for spiritual journeys. Evening Ganga Aarti at Parmarth was overwhelming — hundreds of diyas floating on the river. Absolute silence in my mind for the first time in months.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🧘 Yoga</span>
+              <span class="jtag">🔥 Aarti</span>
+              <span class="jtag budget">💰 ₹250 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="4">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 8 · Day 4</div>
+              <div class="jentry-loc">📍 Neelkanth Mahadev Trek</div>
+            </div>
+            <div class="jentry-text">22km trek to Neelkanth Mahadev. Started at 6am with 2 people I matched with on SafeWander. The forest trail is dense and the incline is serious — took 6 hours up and down. Temple at the top is stunning. Met a group of pilgrims who shared prasad with us. My legs gave up on the descent but the view from the top made it completely worth it.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🏔 Trek</span>
+              <span class="jtag">22km</span>
+              <span class="jtag budget">💰 ₹150 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="5">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 9 · Day 5</div>
+              <div class="jentry-loc">📍 Beatles Ashram</div>
+            </div>
+            <div class="jentry-text">Rest day. Wandered into the Beatles Ashram in the afternoon — it's haunting and beautiful. Abandoned buildings covered in graffiti art. Stayed there for 3 hours sketching and reading. Found a hidden rooftop lookout nobody mentions. The view of the Ganga bending below is the most photographed non-photo in my collection.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🧘 Heritage</span>
+              <span class="jtag">📷 Photography</span>
+              <span class="jtag budget">💰 ₹100 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="6">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 10 · Day 6</div>
+              <div class="jentry-loc">📍 Triveni Ghat & Lakshman Jhula Market</div>
+            </div>
+            <div class="jentry-text">Full morning at Triveni Ghat watching the sunrise rituals. The market behind Laxman Jhula is chaotic and wonderful. Bought a Himalayan singing bowl from an old man who played it for 10 minutes to demonstrate. Warning from a fellow SafeWander member about petty theft near the market after 8pm — kept bags close, no issues.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🔥 Triveni Ghat</span>
+              <span class="jtag">🛍 Market</span>
+              <span class="jtag budget">💰 ₹1,200 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="7">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 11 · Day 7</div>
+              <div class="jentry-loc">📍 Camping at Shivpuri Beach</div>
+            </div>
+            <div class="jentry-text">Booked a riverside camp through the SafeWander hostel directory. 8 of us strangers around a bonfire on a Ganga sandbar. Someone had a guitar. The mountains were dark silhouettes against a sky full of stars. No one checked their phone. I'll remember this night for the rest of my life.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🏕 Camping</span>
+              <span class="jtag">🔥 Bonfire</span>
+              <span class="jtag budget">💰 ₹350 spent</span>
+            </div>
+          </div>
+          <div class="jentry" data-entry="8">
+            <div class="jentry-header">
+              <div class="jentry-date">Nov 12 · Day 8</div>
+              <div class="jentry-loc">📍 Rishikesh Bus Stand · Departure</div>
+            </div>
+            <div class="jentry-text">Last morning chai at a rooftop café watching the Ganga. Said goodbye to 7 people who I met as strangers and leaving as friends. SafeWander made every connection feel safe and intentional. This isn't the end — I have a Kedarnath trek planned for February with 3 people I met here. Rishikesh doesn't let you leave; it just gives you a reason to return.</div>
+            <div class="jentry-tags">
+              <span class="jtag">🎒 Departure</span>
+              <span class="jtag">🔁 Will return</span>
+              <span class="jtag budget">💰 Total: ₹9,800</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Journal sidebar: other travelers -->
+      <div class="journal-sidebar">
+        <div class="sec-label" style="margin-bottom:1.2rem">Other Journals</div>
+
+        <div class="journal-mini reveal">
+          <div class="jm-header">
+            <div class="jm-av" style="background:linear-gradient(135deg,var(--ganga),#006B99)">SN</div>
+            <div>
+              <div class="jm-name">Sara Nair <span class="j-vbadge">VERIFIED</span></div>
+              <div class="jm-meta">5 Days · Yoga Focus</div>
+            </div>
+            <div class="live-now-badge">🟢 Live</div>
+          </div>
+          <div class="jm-langs">
+            <span class="lang-badge">🇬🇧 English</span>
+            <span class="lang-badge">🇮🇳 Tamil</span>
+            <span class="lang-badge skill-badge">🧘 Yoga Teacher</span>
+          </div>
+          <div class="jm-excerpt">"Day 3 at Parmarth — the 5am Ganga sunrise yoga changed something fundamental in how I see mornings..."</div>
+          <div class="jm-footer">
+            <span class="jm-days">5 entries · Last 6h ago</span>
+            <button class="btn-sm">Read Journal</button>
+          </div>
+        </div>
+
+        <div class="journal-mini reveal">
+          <div class="jm-header">
+            <div class="jm-av" style="background:linear-gradient(135deg,var(--verified),#008F6B)">DM</div>
+            <div>
+              <div class="jm-name">Dev Mehta <span class="j-vbadge">VERIFIED</span></div>
+              <div class="jm-meta">12 Days · Adventure Route</div>
+            </div>
+          </div>
+          <div class="jm-langs">
+            <span class="lang-badge">🇮🇳 Hindi</span>
+            <span class="lang-badge">🇬🇧 English</span>
+            <span class="lang-badge skill-badge">⚡ Adrenaline</span>
+            <span class="lang-badge skill-badge">🏔 Trek Guide</span>
+          </div>
+          <div class="jm-excerpt">"Bungee at Mohan Chatti was terrifying. Stood on the edge for 4 full minutes. The valley below looked infinite..."</div>
+          <div class="jm-footer">
+            <span class="jm-days">12 entries · 2 days ago</span>
+            <button class="btn-sm">Read Journal</button>
+          </div>
+        </div>
+
+        <div class="journal-mini reveal">
+          <div class="jm-header">
+            <div class="jm-av" style="background:linear-gradient(135deg,var(--gold),#CC7A00)">KS</div>
+            <div>
+              <div class="jm-name">Kavya Singh <span class="j-vbadge">VERIFIED</span></div>
+              <div class="jm-meta">7 Days · Spiritual Journey</div>
+            </div>
+            <div class="live-now-badge">🟢 Live</div>
+          </div>
+          <div class="jm-langs">
+            <span class="lang-badge">🇮🇳 Hindi</span>
+            <span class="lang-badge skill-badge">🙏 Pilgrim</span>
+            <span class="lang-badge skill-badge">📸 Photographer</span>
+          </div>
+          <div class="jm-excerpt">"Sat at Triveni Ghat for 3 hours and didn't write a single word. Some experiences refuse to be captured..."</div>
+          <div class="jm-footer">
+            <span class="jm-days">7 entries · Just now</span>
+            <button class="btn-sm">Read Journal</button>
+          </div>
+        </div>
+
+        <!-- Write your own CTA -->
+        <div class="journal-write-cta reveal">
+          <div class="jwc-icon">📓</div>
+          <div class="jwc-title">Start Your Journal</div>
+          <div class="jwc-desc">Document your Rishikesh journey and share it with the community. Only verified members can publish.</div>
+          <button class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem">✍️ Write Your Story</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ COMMUNITY FEED ══ -->
+<section id="community">
+  <div class="sec">
+    <div class="sec-label">Community</div>
+    <h2>Live Traveler<br>Feed</h2>
+    <p class="sec-desc">Real posts from verified travelers — tips, buddy requests, safety alerts, and Rishikesh moments.</p>
+    <div class="feed-wrapper">
+      <div class="feed-posts">
+        <!-- Post 1 -->
+        <div class="post reveal">
+          <div class="post-top">
+            <div class="p-avatar" style="background:linear-gradient(135deg,var(--saffron),var(--gold))">RK</div>
+            <div>
+              <div class="p-name">Riya Kapoor</div>
+              <div class="p-meta">📍 Shivpuri · 2h ago</div>
+            </div>
+            <div class="p-vbadge">VERIFIED</div>
+          </div>
+          <div class="post-img-strip" style="background:linear-gradient(135deg,#1B3A2D,#0A2015)">🏄</div>
+          <div class="post-text">Grade 4 rafting at Shivpuri was absolutely wild 🌊 Water levels are perfect this week. Connected with 4 people through SafeWander — now we're friends for life! Highly recommend using the buddy match feature.</div>
+          <div class="post-actions">
+            <div class="p-action" onclick="this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'❤️ 43':'🤍 42'">🤍 42</div>
+            <div class="p-action">💬 8 Comments</div>
+            <div class="p-action">🔁 Share</div>
+          </div>
+        </div>
+        <!-- Post 2 (alert) -->
+        <div class="post reveal" style="border-color:rgba(255,59,48,0.2)">
+          <div class="post-top">
+            <div class="p-avatar" style="background:linear-gradient(135deg,var(--gold),#CC7A00)">MT</div>
+            <div>
+              <div class="p-name">Meera Trivedi</div>
+              <div class="p-meta">📍 Laxman Jhula · 4h ago</div>
+            </div>
+            <div class="p-vbadge">VERIFIED</div>
+          </div>
+          <div class="post-text" style="color:rgba(255,59,48,0.9)">⚠️ <strong>Safety Alert:</strong> Bag snatching reported near Laxman Jhula market today after 8pm. Stay alert, keep bags in front. Local police notified. Be safe out there everyone 🙏</div>
+          <div class="post-actions">
+            <div class="p-action">🚨 91 Saw This</div>
+            <div class="p-action">💬 23 Comments</div>
+            <div class="p-action">🔔 Alert Others</div>
+          </div>
+        </div>
+        <!-- Post 3 -->
+        <div class="post reveal">
+          <div class="post-top">
+            <div class="p-avatar" style="background:linear-gradient(135deg,var(--ganga),#006B99)">SA</div>
+            <div>
+              <div class="p-name">Sahil Arora</div>
+              <div class="p-meta">📍 Parmarth · 1d ago</div>
+            </div>
+            <div class="p-vbadge">VERIFIED</div>
+          </div>
+          <div class="post-text">7-day yoga retreat at Parmarth starts next Monday. 2 spots open — looking for women solo travelers interested in joining. DM me directly. All background-verified participants only 🧘‍♀️</div>
+          <div class="post-actions">
+            <div class="p-action" onclick="this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'❤️ 29':'🤍 28'">🤍 28</div>
+            <div class="p-action">💬 14 Comments</div>
+            <div class="p-action">🔁 Share</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="feed-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-title">Who to Connect</div>
+          <div class="who-row">
+            <div class="who-av" style="background:linear-gradient(135deg,var(--saffron),var(--gold))">VP</div>
+            <div>
+              <div class="who-name">Vikram P.</div>
+              <div class="who-tag">Trekker · Rishikesh now</div>
+            </div>
+            <div class="who-connect" onclick="this.textContent='✓ Sent'">Connect</div>
+          </div>
+          <div class="who-row">
+            <div class="who-av" style="background:linear-gradient(135deg,var(--ganga),#006B99)">SN</div>
+            <div>
+              <div class="who-name">Sara N.</div>
+              <div class="who-tag">Yogi · Arrives Nov 10</div>
+            </div>
+            <div class="who-connect" onclick="this.textContent='✓ Sent'">Connect</div>
+          </div>
+          <div class="who-row">
+            <div class="who-av" style="background:linear-gradient(135deg,var(--verified),#008F6B)">DM</div>
+            <div>
+              <div class="who-name">Dev M.</div>
+              <div class="who-tag">Backpacker · Local guide</div>
+            </div>
+            <div class="who-connect" onclick="this.textContent='✓ Sent'">Connect</div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sidebar-title">🔥 Trending</div>
+          <div class="trending-tag-list">
+            <div class="trend-item"><span class="trend-hash">#KedarTrek2024</span><span class="trend-count">142 posts</span></div>
+            <div class="trend-item"><span class="trend-hash">#GangaAarti</span><span class="trend-count">89 posts</span></div>
+            <div class="trend-item"><span class="trend-hash">#ShivpuriRafting</span><span class="trend-count">76 posts</span></div>
+            <div class="trend-item"><span class="trend-hash">#RishikeshSolo</span><span class="trend-count">201 posts</span></div>
+            <div class="trend-item"><span class="trend-hash">#VerifiedOnly</span><span class="trend-count">55 posts</span></div>
+          </div>
+        </div>
+
+        <div class="sidebar-card" style="background:rgba(255,59,48,0.04);border-color:rgba(255,59,48,0.15)">
+          <div class="sidebar-title" style="color:rgba(255,59,48,0.7)">🚨 Active Alerts</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.6;margin-bottom:0.6rem">⚠️ Petty theft near Laxman Jhula after 8pm</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);line-height:1.6">🌧 Rain expected on Neelkanth trail Nov 11–12</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section id="cta">
+  <div class="cta-i">
+    <div class="cta-eyebrow">Join the Community</div>
+    <h2 class="cta-h">Travel Rishikesh Without Fear</h2>
+    <p class="cta-sub">Join 2,400+ verified solo travelers and backpackers building real connections in the adventure capital of India.</p>
+    <div class="cta-btns">
+      <button class="btn-primary">🎒 Get Verified & Join →</button>
+      <button class="btn-secondary">Learn About Safety</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="foot-i">
+    <div class="foot-logo">Safe<span>Wander</span></div>
+    <ul class="foot-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Safety Policy</a></li>
+      <li><a href="#">Verification</a></li>
+      <li><a href="#">For Businesses</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="foot-copy">© 2024 SafeWander · Rishikesh, Uttarakhand</div>
+  </div>
+</footer>
+
+<!-- ══ LIVE CHAT WIDGET ══ -->
+<div class="chat-widget">
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-header-av">🤝</div>
+      <div class="chat-header-name">SafeWander Support</div>
+      <span class="chat-close" id="chatClose">✕</span>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg them">
+        <div class="msg-bubble">Hey! Welcome to SafeWander 👋 How can we help you today?</div>
+        <div class="msg-time">just now</div>
+      </div>
+      <div class="msg them">
+        <div class="msg-bubble">You can ask about verification, finding travel buddies, or safety in Rishikesh!</div>
+        <div class="msg-time">just now</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" placeholder="Type a message..." />
+      <button class="chat-send" id="chatSend">➤</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" id="chatToggle">
+    💬
+    <div class="chat-notif">2</div>
+  </button>
+</div>
+
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="mobile-nav">
+  <ul class="mobile-nav-items">
+    <li class="mob-item active" onclick="setMobActive(this)"><span class="mob-icon">🏠</span>Home</li>
+    <li class="mob-item" onclick="setMobActive(this)"><span class="mob-icon">🗺️</span>Map</li>
+    <li class="mob-item" onclick="setMobActive(this)"><span class="mob-icon">🤝</span>Match</li>
+    <li class="mob-item" onclick="setMobActive(this)"><span class="mob-icon">📸</span>Feed</li>
+    <li class="mob-item" onclick="setMobActive(this)"><span class="mob-icon">👤</span>Profile</li>
+  </ul>
+</nav>
+
+<script>
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cursor.style.transform=`translate(${mx-6}px,${my-6}px)`;
+});
+function animRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  ring.style.transform=`translate(${rx-18}px,${ry-18}px)`;
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('button,a,.mob-item,.feat-card,.event-card,.hostel-card,.post,.traveler-row,.legend-item,.trend-item,.who-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cursor.style.width='18px'; cursor.style.height='18px'; cursor.style.background='var(--gold)'; });
+  el.addEventListener('mouseleave',()=>{ cursor.style.width='12px'; cursor.style.height='12px'; cursor.style.background='var(--saffron)'; });
+});
+
+/* ── THEME TOGGLE ── */
+const toggleBtn = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+toggleBtn.addEventListener('click',()=>{
+  const isLight = document.documentElement.getAttribute('data-theme')==='light';
+  document.documentElement.setAttribute('data-theme', isLight?'dark':'light');
+  themeIcon.textContent = isLight ? '🌙' : '☀️';
+});
+
+/* ── ONBOARDING DEMO ── */
+let step = 2;
+const total = 5;
+function updateDemo(){
+  for(let i=1;i<=total;i++){
+    document.getElementById(`ds${i}`).classList.toggle('show',i===step);
+    const dd=document.getElementById(`dd${i}`);
+    dd.className='demo-dot'+(i<step?' done':i===step?' active':'');
+    const sc=document.getElementById(`sc${i}`);
+    sc.className='step-circle'+(i<step?' done':i===step?' active':'');
+  }
+  document.getElementById('stepCount').textContent=`Step ${step} of ${total}`;
+  document.getElementById('demoNext').textContent = step===total ? '🎉 Finish' : 'Continue →';
+  document.getElementById('demoPrev').style.visibility = step===1?'hidden':'visible';
+}
+document.getElementById('demoNext').addEventListener('click',()=>{ if(step<total){step++;updateDemo();} });
+document.getElementById('demoPrev').addEventListener('click',()=>{ if(step>1){step--;updateDemo();} });
+document.querySelectorAll('.interest-item').forEach(it=>it.addEventListener('click',()=>it.classList.toggle('sel')));
+
+/* ── SCROLL REVEAL ── */
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      // Animate score bars
+      e.target.querySelectorAll('.score-bar-fill').forEach((b,i)=>{
+        setTimeout(()=>{
+          const w=b.dataset.width||'80';
+          b.style.transform=`scaleX(${w/100})`;
+        },i*120);
+      });
+    }
+  });
+},{threshold:0.12});
+document.querySelectorAll('.reveal,.feat-card,.event-card,.hostel-card,.post,.score-breakdown').forEach(el=>observer.observe(el));
+
+/* ── TRUST RING ANIMATION ── */
+const ringObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const ring=document.getElementById('scoreRing');
+      if(ring){ setTimeout(()=>{ ring.style.strokeDashoffset='408'-(408*(9.4/10)); },300); }
+      // animate bars
+      document.querySelectorAll('.score-bar-fill').forEach((b,i)=>{
+        setTimeout(()=>{
+          const w=b.dataset.width||'80';
+          b.style.transform=`scaleX(${parseFloat(w)/100})`;
+        },200+i*130);
+      });
+    }
+  });
+},{threshold:0.3});
+const scoreWrap=document.getElementById('scoreRingWrap');
+if(scoreWrap) ringObs.observe(scoreWrap.closest('section'));
+
+/* ── CHAT ── */
+const chatToggle=document.getElementById('chatToggle');
+const chatPanel=document.getElementById('chatPanel');
+const chatClose=document.getElementById('chatClose');
+const chatInput=document.getElementById('chatInput');
+const chatSend=document.getElementById('chatSend');
+const chatMsgs=document.getElementById('chatMsgs');
+const chatNotif=chatToggle.querySelector('.chat-notif');
+
+chatToggle.addEventListener('click',()=>{
+  chatPanel.classList.toggle('open');
+  if(chatPanel.classList.contains('open')){ chatNotif.style.display='none'; chatInput.focus(); }
+});
+chatClose.addEventListener('click',()=>chatPanel.classList.remove('open'));
+
+function addMsg(text,side){
+  const d=document.createElement('div');
+  d.className=`msg ${side}`;
+  d.innerHTML=`<div class="msg-bubble">${text}</div><div class="msg-time">just now</div>`;
+  chatMsgs.appendChild(d);
+  chatMsgs.scrollTop=chatMsgs.scrollHeight;
+}
+const autoReplies=[
+  "Great question! Verification usually takes 5–10 minutes once all documents are submitted.",
+  "You can find travel buddies using the Match section — filter by activity, dates, and interests!",
+  "All members are background-verified before they can connect with others. Safety is our top priority 🛡️",
+  "Rishikesh is generally very safe for solo travelers. Our Safety Map shows real-time community alerts.",
+];
+let replyIdx=0;
+function sendMsg(){
+  const val=chatInput.value.trim();
+  if(!val) return;
+  addMsg(val,'me');
+  chatInput.value='';
+  setTimeout(()=>addMsg(autoReplies[replyIdx++ % autoReplies.length],'them'),900);
+}
+chatSend.addEventListener('click',sendMsg);
+chatInput.addEventListener('keydown',e=>{ if(e.key==='Enter') sendMsg(); });
+
+/* ── SOS BUTTON DEMO ── */
+let sosHold;
+const sosBtn=document.getElementById('sosBtn');
+sosBtn.addEventListener('mousedown',()=>{
+  sosHold=setTimeout(()=>{
+    sosBtn.style.background='radial-gradient(circle,#FF2020,#CC0000)';
+    sosBtn.innerHTML='<span style="font-size:0.7rem;font-weight:900;color:white;text-align:center">📡 ALERTING<br>NEARBY</span>';
+    setTimeout(()=>{
+      sosBtn.style.background='';
+      sosBtn.innerHTML='<span class="sos-btn-icon">🆘</span>SOS';
+    },3000);
+  },1200);
+});
+sosBtn.addEventListener('mouseup',()=>clearTimeout(sosHold));
+sosBtn.addEventListener('mouseleave',()=>clearTimeout(sosHold));
+
+/* ── MOBILE NAV ── */
+function setMobActive(el){
+  document.querySelectorAll('.mob-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ── JOURNAL DAY SWITCHER ── */
+document.querySelectorAll('.jday').forEach(day => {
+  day.addEventListener('click', () => {
+    const d = day.dataset.day;
+    document.querySelectorAll('.jday').forEach(x => x.classList.remove('active'));
+    day.classList.add('active');
+    document.querySelectorAll('.jentry').forEach(e => e.classList.remove('show'));
+    const entry = document.querySelector(`.jentry[data-entry="${d}"]`);
+    if (entry) entry.classList.add('show');
+  });
+});
+
+/* ── SMOOTH SCROLL ── */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t) t.scrollIntoView({behavior:'smooth'});
+  });
+});
+</script>
+</body>
+</html>
