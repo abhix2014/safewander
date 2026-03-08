@@ -1060,6 +1060,36 @@ h2 {
   gap: 1.5rem;
 }
 .feed-posts { display: flex; flex-direction: column; gap: 1rem; }
+.post-composer {
+  border: 1px solid var(--border-accent);
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.6rem;
+}
+.composer-row { display: grid; grid-template-columns: 1fr 140px auto; gap: 0.5rem; }
+.composer-input, .composer-text {
+  width: 100%;
+  background: rgba(255,245,230,0.03);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.6rem 0.7rem;
+  border-radius: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+}
+.composer-text { min-height: 88px; resize: vertical; }
+.composer-submit {
+  background: var(--saffron);
+  color: #1A0F00;
+  border: none;
+  border-radius: 4px;
+  padding: 0.65rem 0.9rem;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+}
 .post {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -2443,59 +2473,17 @@ footer {
     <h2>Live Traveler<br>Feed</h2>
     <p class="sec-desc">Real posts from verified travelers — tips, buddy requests, safety alerts, and Rishikesh moments.</p>
     <div class="feed-wrapper">
-      <div class="feed-posts">
-        <!-- Post 1 -->
-        <div class="post reveal">
-          <div class="post-top">
-            <div class="p-avatar" style="background:linear-gradient(135deg,var(--saffron),var(--gold))">RK</div>
-            <div>
-              <div class="p-name">Riya Kapoor</div>
-              <div class="p-meta">📍 Shivpuri · 2h ago</div>
-            </div>
-            <div class="p-vbadge">VERIFIED</div>
-          </div>
-          <div class="post-img-strip" style="background:linear-gradient(135deg,#1B3A2D,#0A2015)">🏄</div>
-          <div class="post-text">Grade 4 rafting at Shivpuri was absolutely wild 🌊 Water levels are perfect this week. Connected with 4 people through SafeWander — now we're friends for life! Highly recommend using the buddy match feature.</div>
-          <div class="post-actions">
-            <div class="p-action" onclick="this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'❤️ 43':'🤍 42'">🤍 42</div>
-            <div class="p-action">💬 8 Comments</div>
-            <div class="p-action">🔁 Share</div>
+      <div>
+        <div class="post-composer">
+          <div style="font-family:'Syne',sans-serif;font-size:0.82rem;color:var(--text-muted);">Share a verified update</div>
+          <textarea id="composerText" class="composer-text" placeholder="Share a trip tip, buddy request, or safety alert..."></textarea>
+          <div class="composer-row">
+            <input id="composerName" class="composer-input" placeholder="Your name" value="Guest Traveler" />
+            <input id="composerLocation" class="composer-input" placeholder="Location" value="Rishikesh" />
+            <button id="composerSubmit" class="composer-submit">Post</button>
           </div>
         </div>
-        <!-- Post 2 (alert) -->
-        <div class="post reveal" style="border-color:rgba(255,59,48,0.2)">
-          <div class="post-top">
-            <div class="p-avatar" style="background:linear-gradient(135deg,var(--gold),#CC7A00)">MT</div>
-            <div>
-              <div class="p-name">Meera Trivedi</div>
-              <div class="p-meta">📍 Laxman Jhula · 4h ago</div>
-            </div>
-            <div class="p-vbadge">VERIFIED</div>
-          </div>
-          <div class="post-text" style="color:rgba(255,59,48,0.9)">⚠️ <strong>Safety Alert:</strong> Bag snatching reported near Laxman Jhula market today after 8pm. Stay alert, keep bags in front. Local police notified. Be safe out there everyone 🙏</div>
-          <div class="post-actions">
-            <div class="p-action">🚨 91 Saw This</div>
-            <div class="p-action">💬 23 Comments</div>
-            <div class="p-action">🔔 Alert Others</div>
-          </div>
-        </div>
-        <!-- Post 3 -->
-        <div class="post reveal">
-          <div class="post-top">
-            <div class="p-avatar" style="background:linear-gradient(135deg,var(--ganga),#006B99)">SA</div>
-            <div>
-              <div class="p-name">Sahil Arora</div>
-              <div class="p-meta">📍 Parmarth · 1d ago</div>
-            </div>
-            <div class="p-vbadge">VERIFIED</div>
-          </div>
-          <div class="post-text">7-day yoga retreat at Parmarth starts next Monday. 2 spots open — looking for women solo travelers interested in joining. DM me directly. All background-verified participants only 🧘‍♀️</div>
-          <div class="post-actions">
-            <div class="p-action" onclick="this.classList.toggle('liked');this.innerHTML=this.classList.contains('liked')?'❤️ 29':'🤍 28'">🤍 28</div>
-            <div class="p-action">💬 14 Comments</div>
-            <div class="p-action">🔁 Share</div>
-          </div>
-        </div>
+        <div class="feed-posts" id="feedPosts"></div>
       </div>
 
       <!-- Sidebar -->
@@ -2730,6 +2718,79 @@ const autoReplies=[
   "Rishikesh is generally very safe for solo travelers. Our Safety Map shows real-time community alerts.",
 ];
 let replyIdx=0;
+let postsLoaded = false;
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#39;');
+}
+
+function postCard(p){
+  const alertStyle = p.is_safety_alert ? 'style="border-color:rgba(255,59,48,0.2)"' : '';
+  const textStyle = p.is_safety_alert ? 'style="color:rgba(255,59,48,0.9)"' : '';
+  const image = p.image_emoji ? `<div class="post-img-strip" style="background:linear-gradient(135deg,#1B3A2D,#0A2015)">${escapeHtml(p.image_emoji)}</div>` : '';
+  return `
+    <div class="post reveal" ${alertStyle}>
+      <div class="post-top">
+        <div class="p-avatar" style="background:linear-gradient(135deg,var(--saffron),var(--gold))">${escapeHtml(p.avatar||'GT')}</div>
+        <div>
+          <div class="p-name">${escapeHtml(p.name||'Guest Traveler')}</div>
+          <div class="p-meta">📍 ${escapeHtml(p.location||'Rishikesh')}</div>
+        </div>
+        <div class="p-vbadge">VERIFIED</div>
+      </div>
+      ${image}
+      <div class="post-text" ${textStyle}>${escapeHtml(p.text||'')}</div>
+      <div class="post-actions">
+        <div class="p-action">🤍 ${Number(p.likes||0)}</div>
+        <div class="p-action">💬 ${Number(p.comments||0)} Comments</div>
+        <div class="p-action">🔁 Share</div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadPosts(){
+  const feed=document.getElementById('feedPosts');
+  if(!feed) return;
+  try {
+    const res=await fetch('/api/posts?limit=20');
+    const data=await res.json();
+    feed.innerHTML=(data.posts||[]).map(postCard).join('');
+    postsLoaded = true;
+  } catch(err){
+    feed.innerHTML='<div class="post"><div class="post-text">Unable to load live feed. Please retry.</div></div>';
+  }
+}
+
+async function submitLivePost(){
+  const name=document.getElementById('composerName')?.value?.trim() || 'Guest Traveler';
+  const location=document.getElementById('composerLocation')?.value?.trim() || 'Rishikesh';
+  const text=document.getElementById('composerText')?.value?.trim() || '';
+  if(text.length < 4){ alert('Write at least 4 characters.'); return; }
+  try {
+    const res = await fetch('/api/posts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name, location, text})
+    });
+    if(!res.ok){
+      const payload = await res.json().catch(()=>({error:'Unable to publish post'}));
+      alert(payload.error || 'Unable to publish post');
+      return;
+    }
+    document.getElementById('composerText').value='';
+    await loadPosts();
+  } catch(err){
+    alert('Network error while publishing post. Please retry.');
+  }
+}
+
+document.getElementById('composerSubmit')?.addEventListener('click', submitLivePost);
 function sendMsg(){
   const val=chatInput.value.trim();
   if(!val) return;
@@ -2745,6 +2806,11 @@ let sosHold;
 const sosBtn=document.getElementById('sosBtn');
 sosBtn.addEventListener('mousedown',()=>{
   sosHold=setTimeout(()=>{
+    fetch('/api/sos', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:'Demo Traveler'})
+    }).catch(()=>{});
     sosBtn.style.background='radial-gradient(circle,#FF2020,#CC0000)';
     sosBtn.innerHTML='<span style="font-size:0.7rem;font-weight:900;color:white;text-align:center">📡 ALERTING<br>NEARBY</span>';
     setTimeout(()=>{
@@ -2782,6 +2848,8 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     if(t) t.scrollIntoView({behavior:'smooth'});
   });
 });
+
+loadPosts();
 </script>
 </body>
 </html>
